@@ -13,10 +13,12 @@ const ERRORS = {
 	// LIST
 	LIST_NOT_FOUND: "List not found",
 	LIST_TITLE_REQUIRED: "List title is required",
+	LIST_ALREADY_EXISTS: "List with this title already exists",
 
 	// TASK
 	TASK_NOT_FOUND: "Task not found",
 	TASK_TITLE_REQUIRED: "Task title is required",
+	TASK_ALREADY_EXISTS: "Task with this title already exists",
 
 	// GENERAL
 	INVALID_ID: "Invalid ID",

@@ -1,5 +1,7 @@
 // src/middlewares/error/errorHandler.middleware.js
 
+import ERRORS from "../../constants/errors";
+
 const getCollectionName = (err) => {
 	if (err.errorResponse?.collection) return err.errorResponse.collection;
 
@@ -27,9 +29,17 @@ const errorHandler = (err, req, res, next) => {
 		const collection = getCollectionName(err);
 		const fields = Object.keys(err.keyPattern).join(",");
 
+		if(collection === "lists") {
+			message = ERRORS.LIST_ALREADY_EXISTS;
+		} else if(collection === "tasks") {
+			message = ERRORS.TASK_ALREADY_EXISTS;
+		} else {
+			message = `${fields} already exists in ${collection}`;
+		}
+
 		return res.status(400).json({
 			success: false,
-			message: `${fields} already exists in ${collection}`
+			message
 		});
 	}
 
