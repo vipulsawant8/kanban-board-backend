@@ -1,0 +1,12 @@
+.env.*.local
+.env.production
+.env.devlopment
+.env.local
+
+logs/
+*.log
+
+node_modules/
+
+db_users_data.json
+users.json
