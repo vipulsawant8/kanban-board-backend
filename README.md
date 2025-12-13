@@ -101,9 +101,11 @@ Create a `.env` file:
 
 ```env
 PORT=4000
-MONGO_URI=your_mongodb_connection_string
-JWT_ACCESS_SECRET=your_access_secret
-JWT_REFRESH_SECRET=your_refresh_secret
+DB_CONNECT_STRING=your_mongodb_connection_string
+ACCESS_TOKEN_SECRET=your_access_secret
+REFRESH_TOKEN_SECRET=your_refresh_secret
+ACCESS_TOKEN_EXPIRY=30m
+REFRESH_TOKEN_EXPIRY=15d
 CORS_ORIGIN=http://localhost:5173
 ```
 
