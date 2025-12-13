@@ -1,6 +1,6 @@
 // src/middlewares/error/errorHandler.middleware.js
 
-import ERRORS from "../../constants/errors";
+import ERRORS from "../../constants/errors.js";
 
 const getCollectionName = (err) => {
 	if (err.errorResponse?.collection) return err.errorResponse.collection;
