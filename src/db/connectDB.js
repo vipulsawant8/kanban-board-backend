@@ -11,16 +11,16 @@ const connectDB = async () => {
 
 		if (!DB_PATH) {
 			throw new Error("DB_CONNECT_STRING is not defined in environment variables");
-			process.exit(1);
 		}
 
 		const conn = await connect(DB_PATH);
-	
-		console.log('MongoDB connected :', conn.connection.host);
 
 		if (process.env.NODE_ENV !== "production") {
-			console.log("MongoDB connection name :", conn.connection.name);
-			console.log("MongoDB connection collections :", Object.keys(conn.connection.collections));
+	
+			console.log("MongoDB connected");
+			console.log('host :', conn.connection.host);
+			console.log("dbName :", conn.connection.name);
+			console.log("collections :", Object.keys(conn.connection.collections));
 		}
 
 		// await Task.syncIndexes();
@@ -28,7 +28,7 @@ const connectDB = async () => {
 		// await User.syncIndexes();
 	} catch (error) {
 		
-		console.log("Mongo Connection Error :", error);
+		console.log("MongoDB Connection Error :", error);
 		process.exit(1);
 	}
 };

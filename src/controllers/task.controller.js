@@ -7,7 +7,10 @@ import ERRORS from '../constants/errors.js';
 
 const fetchTasks = asyncHandler( async (req, res) => {
 
-	console.log("fetchTasks controller");
+	if (process.env.NODE_ENV === "development") {
+
+		console.log("fetchTasks controller");
+	}
 
 	const user = req.user;
 
@@ -21,9 +24,12 @@ const fetchTasks = asyncHandler( async (req, res) => {
 } );
 
 const createTask = asyncHandler( async (req, res) => {
+
+	if (process.env.NODE_ENV === "development") {
 	
-	console.log("createList controller");
-	console.log("req.body :", req.body);
+		console.log("createList controller");
+		console.log("req.body :", req.body);
+	}
 
 	const user = req.user;
 
@@ -48,9 +54,12 @@ const createTask = asyncHandler( async (req, res) => {
 
 const updateTask = asyncHandler( async (req, res) => {
 
-	console.log("updateTask controller");
-	console.log("req.body :", req.body);
-	console.log('req.params :', req.params);
+	if (process.env.NODE_ENV === "development") {
+
+		console.log("updateTask controller");
+		console.log("req.body :", req.body);
+		console.log('req.params :', req.params);
+	}
 
 	const user = req.user;
 	const taskID = req.params.id;
@@ -72,8 +81,11 @@ const updateTask = asyncHandler( async (req, res) => {
 
 const deleteTask = asyncHandler( async (req, res) => {
 
-	console.log("deleteTask controller");
-	console.log('req.params :', req.params);
+	if (process.env.NODE_ENV === "development") {
+
+		console.log("deleteTask controller");
+		console.log('req.params :', req.params);
+	}
 
 	const user = req.user;
 	const taskID = req.params.id;
@@ -92,14 +104,14 @@ const deleteTask = asyncHandler( async (req, res) => {
 
 const reorderTasks = asyncHandler( async (req, res) => {
 
-	console.log("reorderTasks controller");
-	console.log("req.body :", req.body);
+	if (process.env.NODE_ENV === "development") {
+
+		console.log("reorderTasks controller");
+		console.log("req.body :", req.body);
+	}
 
 	const user = req.user;
-	// const { srcListID, destListID, tasksOrder } = req.body;
 	const { tasksOrder } = req.body;
-
-	// if (!Task.ObjectId.isValid(srcListID) || !Task.ObjectId.isValid(destListID)) throw new ApiError(400, "Invalid IDs");
 
 	if (!Array.isArray(tasksOrder)) throw new ApiError(400, "taskOrder must be an array");
 

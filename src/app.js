@@ -15,12 +15,11 @@ const app = e();
 app.disable('x-powered-by');
 
 const allowedOrigins = process.env.CORS_ORIGIN.split(',');
-console.log("Allowed CORS Origins :", allowedOrigins);
+if (process.env.NODE_ENV === "development") console.log("Allowed CORS Origins :", allowedOrigins);
 
 const corsOptions = {
 	origin: function (origin, callback) {
-		// allow requests with no origin 
-		// (like mobile apps or curl requests)
+		
 		if (!origin) return callback(null, true);
 		if (allowedOrigins.indexOf(origin) === -1) {
 			const msg = `The CORS policy for this site does not allow access from the specified Origin.`;

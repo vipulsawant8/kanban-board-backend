@@ -7,9 +7,12 @@ import Task from '../models/task.model.js';
 import ERRORS from '../constants/errors.js';
 
 const fetchLists = asyncHandler( async (req, res) => {
+
+	if (process.env.NODE_ENV === "development") {
 	
-	console.log("fetchLists controller");
-	console.log("req.body :", req.body);
+		console.log("fetchLists controller");
+		console.log("req.body :", req.body);
+	}
 
 	const user = req.user;
 	const lists = await List.find({ userID: user._id }).sort({ position: 1 }).lean();
@@ -18,9 +21,11 @@ const fetchLists = asyncHandler( async (req, res) => {
 } );
 
 const createList = asyncHandler( async (req, res) => {
-	
-	console.log("createList controller");
-	console.log("req.body :", req.body);
+
+	if (process.env.NODE_ENV === "development") {
+		console.log("createList controller");
+		console.log("req.body :", req.body);
+	}
 
 	const user = req.user;
 	const title = req.body.title?.trim();
@@ -36,9 +41,12 @@ const createList = asyncHandler( async (req, res) => {
 
 const updateList = asyncHandler( async (req, res) => {
 
-	console.log('updateList controller');
-	console.log('req.body :', req.body);
-	console.log('req.params :', req.params);
+	if (process.env.NODE_ENV === "development") {
+
+		console.log('updateList controller');
+		console.log('req.body :', req.body);
+		console.log('req.params :', req.params);
+	}
 
 	const user = req.user;
 	const listID = req.params.id;
@@ -59,9 +67,12 @@ const updateList = asyncHandler( async (req, res) => {
 
 const deleteList = asyncHandler( async (req, res) => {
 
-	console.log('deleteList controller');
-	console.log('req.body :', req.body);
-	console.log('req.params :', req.params);
+	if (process.env.NODE_ENV === "development") {
+
+		console.log('deleteList controller');
+		console.log('req.body :', req.body);
+		console.log('req.params :', req.params);
+	}
 
 	const user = req.user;
 	const listID = req.params.id;
@@ -82,8 +93,11 @@ const deleteList = asyncHandler( async (req, res) => {
 
 const reorderLists = asyncHandler( async (req, res) => {
 
-	console.log("reorderLists controller");
-	console.log("req.body :", req.body);const user = req.user;
+	if (process.env.NODE_ENV === "development") {
+
+		console.log("reorderLists controller");
+		console.log("req.body :", req.body);const user = req.user;
+	}
 
 	const { listsOrder } = req.body;
 

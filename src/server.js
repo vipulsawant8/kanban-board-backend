@@ -8,7 +8,6 @@ const initiateServer = async () => {
 	try {
 		
 		console.log("Server Initiated");
-		console.log("process.env.NODE_ENV :", process.env.NODE_ENV);
 		await connectDB();
 
 		const PORT = process.env.PORT;
