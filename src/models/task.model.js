@@ -42,7 +42,7 @@ const taskSchema = new Schema({
 	timestamps: true
 });
 
-taskSchema.index({ title: 1, listID: 1 }, { unique: true, collation: { locale: "en", strength: 2 } });
+taskSchema.index({ title: 1, userID: 1 }, { unique: true, collation: { locale: "en", strength: 2 } });
 
 taskSchema.methods.toJSON = function () {
 

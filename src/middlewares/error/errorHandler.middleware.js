@@ -29,6 +29,7 @@ const errorHandler = (err, req, res, next) => {
 		const collection = getCollectionName(err);
 		const fields = Object.keys(err.keyPattern).join(",");
 
+		let message;
 		if(collection === "lists") {
 			message = ERRORS.LIST_ALREADY_EXISTS;
 		} else if(collection === "tasks") {

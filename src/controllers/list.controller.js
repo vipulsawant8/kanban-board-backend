@@ -92,6 +92,7 @@ const deleteList = asyncHandler( async (req, res) => {
 } );
 
 const reorderLists = asyncHandler( async (req, res) => {
+	const user = req.user;
 
 	if (process.env.NODE_ENV === "development") {
 

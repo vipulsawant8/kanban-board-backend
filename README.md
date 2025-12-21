@@ -89,40 +89,49 @@ src
 
 ---
 
+
+
 ## Setup
 
-### Install dependencies
-```sh
+```bash
 npm install
-```
-
-### Environment variables
-Create a `.env` file:
-
-```env
-PORT=4000
-DB_CONNECT_STRING=your_mongodb_connection_string
-ACCESS_TOKEN_SECRET=your_access_secret
-REFRESH_TOKEN_SECRET=your_refresh_secret
-ACCESS_TOKEN_EXPIRY=30m
-REFRESH_TOKEN_EXPIRY=15d
-CORS_ORIGIN=http://localhost:5173
-```
-
-### Run server
-```sh
+cp .env.example .env
 npm run dev
 ```
 
 ---
 
-## Scripts
-```sh
-npm run dev     # Start server in development mode
-npm start       # Start server in production
+## Environment Variables
+
+Create a `.env` file using the provided example:
+
+```bash
+cp .env.example .env
 ```
 
+Required variable:
+
+```env
+PORT=4000
+```
+
+> `.env` files are ignored by Git. Never commit secrets.
+
 ---
+
+## Demo Credentials
+
+Email: `demo.user@kanban.test`  
+Password: `Demo@1234`
+
+⚠️ Mock data only. Reset periodically.
+
+---
+
+## Notes for Reviewers
+
+The demo board uses fictional names (e.g., Justice League, Superman)
+purely for demonstration purposes.
 
 ## License
 MIT
