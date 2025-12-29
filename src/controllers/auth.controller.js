@@ -14,13 +14,12 @@ const generateAccessRefreshToken = async (id) => {
 
 	const accessToken = await user.generateAccessToken();
 	const refreshToken = await user.generateRefreshToken();
+
 	user.refreshToken = refreshToken;
 	await user.save({ validateBeforeSave: false });
 
 
 	const tokens = { accessToken, refreshToken };
-	
-	if (process.env.NODE_ENV === "development") console.log('refreshToken from tokens:', tokens.refreshToken, "refreshToken from user :", user.refreshToken);
 	return tokens;
 };
 
@@ -77,7 +76,7 @@ const loginUser = asyncHandler( async (req, res) => {
 
 	const validUserJSON = validUser.toJSON();
 
-	const response = { message: "User logged-in successfully", data: { user: validUserJSON, accessToken }, success: true };
+	const response = { message: "User logged-in successfully", data: validUserJSON, success: true };
 
 	return res.status(200)
 	.cookie('accessToken', accessToken, setCookieOptions('accessToken'))
@@ -92,7 +91,6 @@ const logoutUser = asyncHandler( async (req, res) => {
 	await User.findByIdAndUpdate(user._id, { $set: { refreshToken: null } });
 
 	const response = { message: "User logged-out successfully", success: true };
-
 	return res.status(200)
 	.clearCookie('accessToken')
 	.clearCookie('refreshToken')
@@ -104,7 +102,6 @@ const getMe = asyncHandler( async (req, res) => {
 	const user = req.user;
 	
 	const response = { message: "User fetched", data: user };
-
 	return res.status(200).json(response);
 } );
 
@@ -128,17 +125,16 @@ const refreshAccessToken = asyncHandler( async (req, res) => {
 	
 	if (process.env.NODE_ENV === "development") console.log('validUser :', validUser);
 
-	if (!validUser || !validUser.refreshToken) throw new ApiError(401, ERRORS.USER_NOT_FOUND);
+	if (!validUser || !validUser.refreshToken) throw new ApiError(401, "Unauthorized");
 
-	if (incomingToken !== validUser.refreshToken) throw new ApiError(401, ERRORS.TOKEN_INVALID);
+	if (incomingToken !== validUser.refreshToken) throw new ApiError(401, "Unauthorized");
 	const { accessToken, refreshToken } = await generateAccessRefreshToken(validUser._id);
 
 	if (process.env.NODE_ENV === "development") console.log("user :", validUser);
 
 	const validUserJSON = validUser.toJSON();
 
-	const response = { message: "User logged-in successfully", data: { user: validUserJSON, accessToken }, success: true };
-
+	const response = { message: "User logged-in successfully", data: validUserJSON, success: true };
 	return res.status(200)
 	.cookie('accessToken', accessToken, setCookieOptions('accessToken'))
 	.cookie('refreshToken', refreshToken, setCookieOptions('refreshToken'))
