@@ -115,9 +115,7 @@ const refreshAccessToken = asyncHandler( async (req, res) => {
 
 	const incomingToken = req.cookies.refreshToken;
 	
-	if (process.env.NODE_ENV === "development") console.log('incomingToken :', incomingToken);
-	
-	if (!incomingToken)  throw new ApiError(400, ERRORS.TOKEN_MISSING);
+	if (!incomingToken)  throw new ApiError(401, "Unauthorized");
 	
 	const decodedToken = jwt.verify(incomingToken, process.env.REFRESH_TOKEN_SECRET);
 
