@@ -8,17 +8,17 @@ const ERRORS = {
 
 	// USER
 	USER_NOT_FOUND: "User not found",
-	EMAIL_ALREADY_EXISTS: "Email is already registered",
+	EMAIL_ALREADY_EXISTS: "An account with this email already exists. Try logging in.",
 
 	// LIST
-	LIST_NOT_FOUND: "List not found",
-	LIST_TITLE_REQUIRED: "List title is required",
-	LIST_ALREADY_EXISTS: "List with this title already exists",
+	LIST_NOT_FOUND: "This list no longer exists or you don't have permission to access it.",
+	LIST_TITLE_REQUIRED: "Add a title before adding the list.",
+	LIST_ALREADY_EXISTS: "A list with this title already exists in your account.",
 
 	// TASK
-	TASK_NOT_FOUND: "Task not found",
-	TASK_TITLE_REQUIRED: "Task title is required",
-	TASK_ALREADY_EXISTS: "Task with this title already exists",
+	TASK_NOT_FOUND: "This task no longer exists or you don't have permission to access it.",
+	TASK_TITLE_REQUIRED: "Add a title before adding the task.",
+	TASK_ALREADY_EXISTS: "A task with this title already exists in the list.",
 
 	// GENERAL
 	INVALID_ID: "Invalid ID",

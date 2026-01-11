@@ -37,7 +37,7 @@ const createTask = asyncHandler( async (req, res) => {
 	const listID = req.body.listID;
 	const description = req.body.description?.trim();
 
-	if (!Types.ObjectId.isValid(listID)) throw new ApiError(400, ERRORS.INVALID_ID);
+	if (!Types.ObjectId.isValid(listID)) throw new ApiError(400, "Unable to add task. The list could not be identified.");
 
 	if (!title || title.length === 0) throw new ApiError(400, ERRORS.TASK_TITLE_REQUIRED);
 
@@ -46,7 +46,7 @@ const createTask = asyncHandler( async (req, res) => {
 	const newTask = await Task.create({ title, description, position: count, listID, userID: user._id });
 
 	return res.status(200).json({
-		message: "Task created successful",
+		message: `Task "${newTask.title}" was created`,
 		data: newTask,
 		success: true
 	});
@@ -67,13 +67,13 @@ const updateTask = asyncHandler( async (req, res) => {
 	const title = req.body.title?.trim();
 	const description = req.body.description?.trim();
 
-	if (!Types.ObjectId.isValid(taskID)) throw new ApiError(400, ERRORS.INVALID_ID);
+	if (!Types.ObjectId.isValid(taskID)) throw new ApiError(400, "Unable to update task. The task could not be identified.");
 
 	const task = await Task.findOneAndUpdate({ userID: user._id, _id: taskID }, { title, description }, { new: true }).lean();
-	if (!task) throw new ApiError(404, ERRORS.TASK_NOT_FOUND);
+	if (!task) throw new ApiError(404, "This task no longer exists or you don't have permission to update it.");
 
 	return res.status(200).json({
-		message: "Task updated successful",
+		message: `Task "${task.title}" was updated`,
 		data: task,
 		success: true
 	});
@@ -90,13 +90,13 @@ const deleteTask = asyncHandler( async (req, res) => {
 	const user = req.user;
 	const taskID = req.params.id;
 	
-	if (!Types.ObjectId.isValid(taskID)) throw new ApiError(400, ERRORS.INVALID_ID);
+	if (!Types.ObjectId.isValid(taskID)) throw new ApiError(400, "Unable to delete task. The task could not be identified.");
 	
 	const task = await Task.findOneAndDelete({ _id: taskID, userID: user._id }).lean();
-	if (!task) throw new ApiError(404, ERRORS.TASK_NOT_FOUND);
+	if (!task) throw new ApiError(404, "This task no longer exists or you don't have permission to delete it.");
 
 	return res.status(200).json({
-		message: "Task deleted successful",
+		message: `Task "${task.title}" was deleted`,
 		data: task,
 		success: true
 	});

@@ -36,7 +36,7 @@ const createList = asyncHandler( async (req, res) => {
 
 	const newList = await List.create({ userID: user._id, title, position: count });
 
-	return res.status(200).json({ message: "List created successfully", data: newList, success: true });
+	return res.status(200).json({ message: `List "${newList.title}" was created`, data: newList, success: true });
 } );
 
 const updateList = asyncHandler( async (req, res) => {
@@ -53,13 +53,13 @@ const updateList = asyncHandler( async (req, res) => {
 
 	const title = req.body.title?.trim();
 
-	if (!Types.ObjectId.isValid(listID)) throw new ApiError(400, ERRORS.INVALID_ID);
+	if (!Types.ObjectId.isValid(listID)) throw new ApiError(400, "Unable to update list. The list could not be identified.");
 	
 	const list = await List.findOneAndUpdate({ _id: listID, userID: user._id }, { title }, { new: true, runValidators: true });
-	if (!list) throw new ApiError(404, ERRORS.LIST_NOT_FOUND);
+	if (!list) throw new ApiError(404, "This list no longer exists or you don't have permission to update it.");
 
 	return res.status(200).json({
-		message: "List updated successful",
+		message: `List "${list.title}" was updated`,
 		data: list,
 		success: true
 	});
@@ -77,15 +77,15 @@ const deleteList = asyncHandler( async (req, res) => {
 	const user = req.user;
 	const listID = req.params.id;
 	
-	if (!Types.ObjectId.isValid(listID)) throw new ApiError(400, ERRORS.INVALID_ID);
+	if (!Types.ObjectId.isValid(listID)) throw new ApiError(400, "Unable to delete list. The list could not be identified.");
 
 	const list = await List.findOneAndDelete({ _id: listID, userID: user._id });
-	if (!list) throw new ApiError(404, ERRORS.LIST_NOT_FOUND);
+	if (!list) throw new ApiError(404, "This list no longer exists or you don't have permission to delete it.");
 	
 	await Task.deleteMany({ listID: list._id, userID: user._id });
 	
 	return res.status(200).json({
-		message: "List deleted successful",
+		message: `List "${list.title}" and its associated tasks were deleted`,
 		data: list,
 		success: true
 	});

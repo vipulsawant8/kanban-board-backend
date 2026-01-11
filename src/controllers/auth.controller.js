@@ -45,7 +45,7 @@ const registerUser = asyncHandler( async (req, res) => {
 
 	const userResponse = newUser.toJSON();
 
-	const response = { message: "User registred", data: userResponse, success: true };
+	const response = { message: "Account created successfully.", data: userResponse, success: true };
 	return res.status(200).json(response);
 } );
 
@@ -76,7 +76,7 @@ const loginUser = asyncHandler( async (req, res) => {
 
 	const validUserJSON = validUser.toJSON();
 
-	const response = { message: "User logged-in successfully", data: validUserJSON, success: true };
+	const response = { message: "Logged in successfully.", data: validUserJSON, success: true };
 
 	return res.status(200)
 	.cookie('accessToken', accessToken, setCookieOptions('accessToken'))
@@ -90,7 +90,7 @@ const logoutUser = asyncHandler( async (req, res) => {
 
 	await User.findByIdAndUpdate(user._id, { $set: { refreshToken: null } });
 
-	const response = { message: "User logged-out successfully", success: true };
+	const response = { message: "Logged out successfully.", success: true };
 	return res.status(200)
 	.clearCookie('accessToken')
 	.clearCookie('refreshToken')
@@ -101,7 +101,7 @@ const getMe = asyncHandler( async (req, res) => {
 
 	const user = req.user;
 	
-	const response = { message: "User fetched", data: user };
+	const response = { message: "Profile loaded successfully.", data: user };
 	return res.status(200).json(response);
 } );
 
@@ -132,7 +132,7 @@ const refreshAccessToken = asyncHandler( async (req, res) => {
 
 	const validUserJSON = validUser.toJSON();
 
-	const response = { message: "User logged-in successfully", data: validUserJSON, success: true };
+	const response = { message: "Session extended successfully.", data: validUserJSON, success: true };
 	return res.status(200)
 	.cookie('accessToken', accessToken, setCookieOptions('accessToken'))
 	.cookie('refreshToken', refreshToken, setCookieOptions('refreshToken'))
