@@ -7,17 +7,24 @@ import ERRORS from "../constants/errors.js";
 
 import jwt from 'jsonwebtoken';
 
-const generateAccessRefreshToken = async (id) => {
+const generateAccessRefreshToken = async ({ userId, deviceId, userAgent, ipAddress }) => {
 
-	const user = await User.findById(id);
+	const user = await User.findById(userId);
 	if (!user) throw new ApiError(404, ERRORS.USER_NOT_FOUND);
 
 	const accessToken = await user.generateAccessToken();
 	const refreshToken = await user.generateRefreshToken();
 
-	user.refreshToken = refreshToken;
-	await user.save({ validateBeforeSave: false });
+	user.refreshTokens = user.refreshTokens.slice(-4);
 
+	user.refreshTokens.push({
+		token: refreshToken,
+		deviceId,
+		userAgent,
+		ipAddress
+	});
+
+	await user.save({ validateBeforeSave: false });
 
 	const tokens = { accessToken, refreshToken };
 	return tokens;
@@ -59,8 +66,9 @@ const loginUser = asyncHandler( async (req, res) => {
 
 	const identity = req.body.identity;
 	const password = req.body.password;
+	const deviceId = req.body.deviceId;
 
-	if (!identity || !password) throw new ApiError(400, ERRORS.MISSING_FIELDS);
+	if (!identity || !password || !deviceId) throw new ApiError(400, ERRORS.MISSING_FIELDS);
 
 	const validUser = await User.findOne({ email: identity }).select("-refreshToken");
 
@@ -72,7 +80,7 @@ const loginUser = asyncHandler( async (req, res) => {
 
 	if (!isPasswordVerified) throw new ApiError(401, ERRORS.INVALID_CREDENTIALS);
 
-	const { accessToken, refreshToken } = await generateAccessRefreshToken(validUser._id);
+	const { accessToken, refreshToken } = await generateAccessRefreshToken({ userId: validUser._id, deviceId, userAgent: req.get('User-Agent') || '', ipAddress: req.ip });
 
 	const validUserJSON = validUser.toJSON();
 
@@ -86,9 +94,37 @@ const loginUser = asyncHandler( async (req, res) => {
 
 const logoutUser = asyncHandler( async (req, res) => {
 
+	const incomingToken = req.cookies.refreshToken;
+	const deviceId = req.body.deviceId;
+
 	const user = req.user;
 
-	await User.findByIdAndUpdate(user._id, { $set: { refreshToken: null } });
+	if (!incomingToken || !deviceId)  throw new ApiError(401, "Unauthorized");
+	
+	let decodedToken;
+	try {
+		decodedToken = jwt.verify(incomingToken, process.env.REFRESH_TOKEN_SECRET);
+	} catch (error) {
+		
+		return res.clearCookie('accessToken')
+		.clearCookie('refreshToken')
+		.status(200)
+		.json({ message: "Logged out successfully.", success: true });
+	}
+
+	// await User.findByIdAndUpdate(user._id, { $set: { refreshToken: null } });
+
+	const userFromDb = await User.findById(user._id);
+
+	if (userFromDb.id.toString() !== user._id.toString()) {
+		
+		throw new ApiError(401, "Unauthorized");
+	}
+
+	if (userFromDb) {
+		userFromDb.refreshTokens = userFromDb.refreshTokens.filter( tokenObj => tokenObj.deviceId !== deviceId );
+		await userFromDb.save({ validateBeforeSave: false });
+	}
 
 	const response = { message: "Logged out successfully.", success: true };
 	return res.status(200)
@@ -114,21 +150,38 @@ const refreshAccessToken = asyncHandler( async (req, res) => {
 	}
 
 	const incomingToken = req.cookies.refreshToken;
+	const deviceId = req.body.deviceId;
 	
-	if (!incomingToken)  throw new ApiError(401, "Unauthorized");
+	if (!incomingToken || !deviceId)  throw new ApiError(401, "Unauthorized");
 	
 	const decodedToken = jwt.verify(incomingToken, process.env.REFRESH_TOKEN_SECRET);
+
+	if (!decodedToken || !decodedToken.id) throw new ApiError(401, "Unauthorized");
 
 	const validUser = await User.findById(decodedToken.id);
 	
 	if (process.env.NODE_ENV === "development") console.log('validUser :', validUser);
 
-	if (!validUser || !validUser.refreshToken) throw new ApiError(401, "Unauthorized");
+	if (!validUser) throw new ApiError(401, "Unauthorized");
 
-	if (incomingToken !== validUser.refreshToken) throw new ApiError(401, "Unauthorized");
-	const { accessToken, refreshToken } = await generateAccessRefreshToken(validUser._id);
+	// if (!validUser || !validUser.refreshToken) throw new ApiError(401, "Unauthorized");
 
-	if (process.env.NODE_ENV === "development") console.log("user :", validUser);
+	// if (incomingToken !== validUser.refreshToken) throw new ApiError(401, "Unauthorized");
+	// const { accessToken, refreshToken } = await generateAccessRefreshToken(validUser._id);
+
+	const tokenIndex = validUser.refreshTokens.findIndex( (tokenObj) => tokenObj.token === incomingToken && tokenObj.deviceId === deviceId );
+
+	if (tokenIndex === -1) {
+
+		validUser.refreshTokens = [];
+		await validUser.save({ validateBeforeSave: false });
+		throw new ApiError(401, "Unauthorized");
+	};
+	
+	validUser.refreshTokens.splice(tokenIndex, 1);
+	await validUser.save({ validateBeforeSave: false });
+	
+	const { accessToken, refreshToken } = await generateAccessRefreshToken({ userId: validUser._id, deviceId, userAgent: req.get('User-Agent') || '', ipAddress: req.ip });
 
 	const validUserJSON = validUser.toJSON();
 
