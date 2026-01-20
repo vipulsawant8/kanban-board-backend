@@ -37,7 +37,7 @@ const createTask = asyncHandler( async (req, res) => {
 	const listID = req.body.listID;
 	const description = req.body.description?.trim();
 
-	if (!Types.ObjectId.isValid(listID)) throw new ApiError(400, "Unable to add task. The list could not be identified.");
+	if (!Types.ObjectId.isValid(listID)) throw new ApiError(400, ERRORS.TASK_LIST_NOT_IDENTIFIED);
 
 	if (!title || title.length === 0) throw new ApiError(400, ERRORS.TASK_TITLE_REQUIRED);
 
@@ -67,10 +67,10 @@ const updateTask = asyncHandler( async (req, res) => {
 	const title = req.body.title?.trim();
 	const description = req.body.description?.trim();
 
-	if (!Types.ObjectId.isValid(taskID)) throw new ApiError(400, "Unable to update task. The task could not be identified.");
+	if (!Types.ObjectId.isValid(taskID)) throw new ApiError(400, ERRORS.TASK_NOT_IDENTIFIED);
 
 	const task = await Task.findOneAndUpdate({ userID: user._id, _id: taskID }, { title, description }, { new: true }).lean();
-	if (!task) throw new ApiError(404, "This task no longer exists or you don't have permission to update it.");
+	if (!task) throw new ApiError(404, ERRORS.TASK_NOT_FOUND);
 
 	return res.status(200).json({
 		message: `Task "${task.title}" was updated`,
@@ -90,10 +90,10 @@ const deleteTask = asyncHandler( async (req, res) => {
 	const user = req.user;
 	const taskID = req.params.id;
 	
-	if (!Types.ObjectId.isValid(taskID)) throw new ApiError(400, "Unable to delete task. The task could not be identified.");
+	if (!Types.ObjectId.isValid(taskID)) throw new ApiError(400, ERRORS.TASK_NOT_IDENTIFIED);
 	
 	const task = await Task.findOneAndDelete({ _id: taskID, userID: user._id }).lean();
-	if (!task) throw new ApiError(404, "This task no longer exists or you don't have permission to delete it.");
+	if (!task) throw new ApiError(404, ERRORS.TASK_NOT_FOUND);
 
 	return res.status(200).json({
 		message: `Task "${task.title}" was deleted`,
@@ -113,14 +113,14 @@ const reorderTasks = asyncHandler( async (req, res) => {
 	const user = req.user;
 	const { tasksOrder } = req.body;
 
-	if (!Array.isArray(tasksOrder)) throw new ApiError(400, "taskOrder must be an array");
+	if (!Array.isArray(tasksOrder)) throw new ApiError(400, ERRORS.TASK_ORDER_DATA_TYPE_INVALID);
 
-	if (tasksOrder.length === 0) throw new ApiError(400, ERRORS.MISSING_FIELDS);
+	if (tasksOrder.length === 0) throw new ApiError(400, ERRORS.TASK_REORDER_EMPTY);
 
 	for(const t of tasksOrder) {
-		if (!Types.ObjectId.isValid(t._id)) throw new ApiError(400, `Invalid task ID : ${t._id}`);
-		if (!Types.ObjectId.isValid(t.listID)) throw new ApiError(400, `Invalid list ID : ${t.listID}`);
-		if (typeof t.position !== "number" || t.position < 0) throw new ApiError(400, `Invalid position for task ID : ${t._id}`);
+		if (!Types.ObjectId.isValid(t._id)) throw new ApiError(400, ERRORS.TASK_NOT_IDENTIFIED);
+		if (!Types.ObjectId.isValid(t.listID)) throw new ApiError(400, ERRORS.TASK_LIST_NOT_IDENTIFIED);
+		if (typeof t.position !== "number" || t.position < 0) throw new ApiError(400, ERRORS.TASK_POSITION_INVALID);
 	}	
 
 	const bulk = tasksOrder.map(t => ( {

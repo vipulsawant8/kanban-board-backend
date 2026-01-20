@@ -99,7 +99,7 @@ const logoutUser = asyncHandler( async (req, res) => {
 
 	const user = req.user;
 
-	if (!incomingToken || !deviceId)  throw new ApiError(401, "Unauthorized");
+	if (!incomingToken || !deviceId)  throw new ApiError(401, ERRORS.UNAUTHORIZED);
 	
 	let decodedToken;
 	try {
@@ -118,7 +118,7 @@ const logoutUser = asyncHandler( async (req, res) => {
 
 	if (userFromDb.id.toString() !== user._id.toString()) {
 		
-		throw new ApiError(401, "Unauthorized");
+		throw new ApiError(401, ERRORS.UNAUTHORIZED);
 	}
 
 	if (userFromDb) {
@@ -152,21 +152,21 @@ const refreshAccessToken = asyncHandler( async (req, res) => {
 	const incomingToken = req.cookies.refreshToken;
 	const deviceId = req.body.deviceId;
 	
-	if (!incomingToken || !deviceId)  throw new ApiError(401, "Unauthorized");
+	if (!incomingToken || !deviceId)  throw new ApiError(401, ERRORS.UNAUTHORIZED);
 	
 	const decodedToken = jwt.verify(incomingToken, process.env.REFRESH_TOKEN_SECRET);
 
-	if (!decodedToken || !decodedToken.id) throw new ApiError(401, "Unauthorized");
+	if (!decodedToken || !decodedToken.id) throw new ApiError(401, ERRORS.UNAUTHORIZED);
 
 	const validUser = await User.findById(decodedToken.id);
 	
 	if (process.env.NODE_ENV === "development") console.log('validUser :', validUser);
 
-	if (!validUser) throw new ApiError(401, "Unauthorized");
+	if (!validUser) throw new ApiError(401, ERRORS.UNAUTHORIZED);
 
-	// if (!validUser || !validUser.refreshToken) throw new ApiError(401, "Unauthorized");
+	// if (!validUser || !validUser.refreshToken) throw new ApiError(401, ERRORS.UNAUTHORIZED);
 
-	// if (incomingToken !== validUser.refreshToken) throw new ApiError(401, "Unauthorized");
+	// if (incomingToken !== validUser.refreshToken) throw new ApiError(401, ERRORS.UNAUTHORIZED);
 	// const { accessToken, refreshToken } = await generateAccessRefreshToken(validUser._id);
 
 	const tokenIndex = validUser.refreshTokens.findIndex( (tokenObj) => tokenObj.token === incomingToken && tokenObj.deviceId === deviceId );
@@ -175,7 +175,7 @@ const refreshAccessToken = asyncHandler( async (req, res) => {
 
 		validUser.refreshTokens = [];
 		await validUser.save({ validateBeforeSave: false });
-		throw new ApiError(401, "Unauthorized");
+		throw new ApiError(401, ERRORS.UNAUTHORIZED);
 	};
 	
 	validUser.refreshTokens.splice(tokenIndex, 1);

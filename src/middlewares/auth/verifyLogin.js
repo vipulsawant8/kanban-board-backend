@@ -2,12 +2,13 @@ import asyncHandler from "express-async-handler";
 import jwt from "jsonwebtoken";
 import ApiError from "../../utils/ApiError.js";
 import User from "../../models/user.model.js";
+import ERRORS from "../../constants/errors.js";
 
 const verifyLogin = asyncHandler( async (req, res, next) => {
 	
 	const accessToken = req.cookies?.accessToken;
 
-	if (!accessToken) throw new ApiError(401, "Unauthorized");
+	if (!accessToken) throw new ApiError(401, ERRORS.UNAUTHORIZED);
 
 	let decodedToken;
 	try {
@@ -15,10 +16,10 @@ const verifyLogin = asyncHandler( async (req, res, next) => {
 		decodedToken = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
 	} catch (error) {
 		
-		throw new ApiError(401, "Unauthorized")
+		throw new ApiError(401, ERRORS.UNAUTHORIZED)
 	}
 
-	if (!decodedToken.id) throw new ApiError(401, "Unauthorized");
+	if (!decodedToken.id) throw new ApiError(401, ERRORS.UNAUTHORIZED);
 
 	const user = await User.findById(decodedToken.id).select("-password -refreshToken");
 

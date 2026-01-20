@@ -53,10 +53,12 @@ const updateList = asyncHandler( async (req, res) => {
 
 	const title = req.body.title?.trim();
 
-	if (!Types.ObjectId.isValid(listID)) throw new ApiError(400, "Unable to update list. The list could not be identified.");
+	if (!title || title.length === 0) throw new ApiError(400, ERRORS.LIST_TITLE_REQUIRED);
+
+	if (!Types.ObjectId.isValid(listID)) throw new ApiError(400, ERRORS.LIST_NOT_IDENTIFIED);
 	
 	const list = await List.findOneAndUpdate({ _id: listID, userID: user._id }, { title }, { new: true, runValidators: true });
-	if (!list) throw new ApiError(404, "This list no longer exists or you don't have permission to update it.");
+	if (!list) throw new ApiError(404, ERRORS.LIST_NOT_FOUND);
 
 	return res.status(200).json({
 		message: `List "${list.title}" was updated`,
@@ -77,10 +79,10 @@ const deleteList = asyncHandler( async (req, res) => {
 	const user = req.user;
 	const listID = req.params.id;
 	
-	if (!Types.ObjectId.isValid(listID)) throw new ApiError(400, "Unable to delete list. The list could not be identified.");
+	if (!Types.ObjectId.isValid(listID)) throw new ApiError(400, ERRORS.LIST_NOT_IDENTIFIED);
 
 	const list = await List.findOneAndDelete({ _id: listID, userID: user._id });
-	if (!list) throw new ApiError(404, "This list no longer exists or you don't have permission to delete it.");
+	if (!list) throw new ApiError(404, ERRORS.LIST_NOT_FOUND);
 	
 	await Task.deleteMany({ listID: list._id, userID: user._id });
 	
@@ -97,18 +99,18 @@ const reorderLists = asyncHandler( async (req, res) => {
 	if (process.env.NODE_ENV === "development") {
 
 		console.log("reorderLists controller");
-		console.log("req.body :", req.body);const user = req.user;
+		console.log("req.body :", req.body);
 	}
 
 	const { listsOrder } = req.body;
 
-	if (!Array.isArray(listsOrder)) throw new ApiError(400, 'Lists order must be an array');
+	if (!Array.isArray(listsOrder)) throw new ApiError(400, ERRORS.LIST_ORDER_DATA_TYPE_INVALID);
 
-	if (listsOrder.length === 0) throw new ApiError(400, ERRORS.MISSING_FIELDS);
+	if (listsOrder.length === 0) throw new ApiError(400, ERRORS.LIST_REORDER_EMPTY);
 
 	for(const l of listsOrder) {
-		if (!Types.ObjectId.isValid(l._id)) throw new ApiError(400, `Invalid list ID : ${l._id}`);
-		if (typeof l.position !== "number" || l.position < 0) throw new ApiError(400, `Invalid position for list ID : ${l._id}`);
+		if (!Types.ObjectId.isValid(l._id)) throw new ApiError(400, ERRORS.LIST_NOT_IDENTIFIED);
+		if (typeof l.position !== "number" || l.position < 0) throw new ApiError(400, ERRORS.LIST_POSITION_INVALID);
 	}
 
 	const bulk = listsOrder.map(l => ( {
