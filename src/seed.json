@@ -30,7 +30,7 @@
   { "userID": "6947c05c15b1634414cbeeb8", "listID": "6970d4f2f7ea85076010f116", "title": "Scarlet Witch 🔴", "description": "Reality-warping Avenger", "position": 26 },
   { "userID": "6947c05c15b1634414cbeeb8", "listID": "6970d4f2f7ea85076010f116", "title": "Captain Marvel ⭐", "description": "Cosmic powerhouse", "position": 27 },
   { "userID": "6947c05c15b1634414cbeeb8", "listID": "6970d4f2f7ea85076010f116", "title": "Moon Knight 🌙", "description": "Vengeful anti-hero", "position": 28 },
-  { "userID": "6947c05c15b1634414cbeeb8", "listID": "6970d4f2f7ea85076010f116", "title": "Venom 🕷️", "description": "Symbiote anti-hero", "position": 29 },
+  { "userID": "6947c05c15b1634414cbeeb8", "listID": "6970d4f2f7ea85076010f116", "title": "Agent Venom 🕷️", "description": "Symbiote anti-hero", "position": 29 },
 
   { "userID": "6947c05c15b1634414cbeeb8", "listID": "6970d4f2f7ea85076010f116", "title": "Blade 🗡️", "description": "Daywalker vampire hunter", "position": 30 },
   { "userID": "6947c05c15b1634414cbeeb8", "listID": "6970d4f2f7ea85076010f116", "title": "Daredevil 🩸", "description": "Blind justice fighter", "position": 31 },
@@ -126,6 +126,6 @@
   { "userID": "6947c05c15b1634414cbeeb8", "listID": "698d9d52ef134c5537005889", "title": "Peter Quill 🚀", "description": "Star-Lord leader of Guardians", "position": 35 },
   { "userID": "6947c05c15b1634414cbeeb8", "listID": "698d9d52ef134c5537005889", "title": "Donna Troy 🗡️", "description": "Wonder Woman ally", "position": 36 },
   { "userID": "6947c05c15b1634414cbeeb8", "listID": "698d9d52ef134c5537005889", "title": "James Rhodes 🛡️", "description": "Close friend of Tony Stark", "position": 37 },
-  { "userID": "6947c05c15b1634414cbeeb8", "listID": "698d9d52ef134c5537005889", "title": "Jarvis (Edwin Jarvis) 🏠", "description": "Stark family butler", "position": 38 },
+  { "userID": "6947c05c15b1634414cbeeb8", "listID": "698d9d52ef134c5537005889", "title": "Edwin 🏠", "description": "Stark family butler", "position": 38 },
   { "userID": "6947c05c15b1634414cbeeb8", "listID": "698d9d52ef134c5537005889", "title": "Jimmy Woo 🕵️", "description": "FBI agent ally", "position": 39 }
 ]
