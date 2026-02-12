@@ -3,7 +3,7 @@ import { connect } from "mongoose";
 // import List from "../models/list.model.js";
 import Task from "../models/task.model.js";
 
-import tasks from "../seed.json" with {type: "json"};
+// import tasks from "../seed.json" with {type: "json"};
 
 const connectDB = async () => {
 
@@ -28,7 +28,7 @@ const connectDB = async () => {
 		await Task.syncIndexes();
 		// await List.syncIndexes();
 		// await User.syncIndexes();
-		await Task.insertMany(tasks);
+		// await Task.insertMany(tasks);
 	} catch (error) {
 		
 		console.log("MongoDB Connection Error :", error);
