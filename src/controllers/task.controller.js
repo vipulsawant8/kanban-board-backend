@@ -14,7 +14,7 @@ const fetchTasks = asyncHandler( async (req, res) => {
 
 	const user = req.user;
 
-	const tasks = await Task.find({ userID: user._id }).lean();
+	const tasks = await Task.find({ authorID: user._id }).lean();
 
 	return res.status(200).json({
 		message: "Tasks fetched successfully",
@@ -41,9 +41,9 @@ const createTask = asyncHandler( async (req, res) => {
 
 	if (!title || title.length === 0) throw new ApiError(400, ERRORS.TASK_TITLE_REQUIRED);
 
-	const count = await Task.countDocuments({ userID: user._id, listID });
+	const count = await Task.countDocuments({ authorID: user._id, listID });
 
-	const newTask = await Task.create({ title, description, position: count, listID, userID: user._id });
+	const newTask = await Task.create({ title, description, position: count, listID, authorID: user._id });
 
 	return res.status(200).json({
 		message: `Task "${newTask.title}" was created`,
@@ -69,7 +69,7 @@ const updateTask = asyncHandler( async (req, res) => {
 
 	if (!Types.ObjectId.isValid(taskID)) throw new ApiError(400, ERRORS.TASK_NOT_IDENTIFIED);
 
-	const task = await Task.findOneAndUpdate({ userID: user._id, _id: taskID }, { title, description }, { new: true }).lean();
+	const task = await Task.findOneAndUpdate({ authorID: user._id, _id: taskID }, { title, description }, { new: true }).lean();
 	if (!task) throw new ApiError(404, ERRORS.TASK_NOT_FOUND);
 
 	return res.status(200).json({
@@ -92,7 +92,7 @@ const deleteTask = asyncHandler( async (req, res) => {
 	
 	if (!Types.ObjectId.isValid(taskID)) throw new ApiError(400, ERRORS.TASK_NOT_IDENTIFIED);
 	
-	const task = await Task.findOneAndDelete({ _id: taskID, userID: user._id }).lean();
+	const task = await Task.findOneAndDelete({ _id: taskID, authorID: user._id }).lean();
 	if (!task) throw new ApiError(404, ERRORS.TASK_NOT_FOUND);
 
 	return res.status(200).json({
@@ -125,7 +125,7 @@ const reorderTasks = asyncHandler( async (req, res) => {
 
 	const bulk = tasksOrder.map(t => ( {
 		updateOne: {
-			filter: { _id: t._id, userID: user._id },
+			filter: { _id: t._id, authorID: user._id },
 			update: {
 				listID: t.listID,
 				position: t.position
@@ -138,7 +138,7 @@ const reorderTasks = asyncHandler( async (req, res) => {
 		await Task.bulkWrite(bulk);
 	}
 	
-	const updatedTasks = await Task.find({ userID: user._id }).sort({ listID: 1, position: 1 }).lean();
+	const updatedTasks = await Task.find({ authorID: user._id }).sort({ listID: 1, position: 1 }).lean();
 
 	const response = { message: "Reordered", success: true, data: updatedTasks };
 

@@ -15,7 +15,7 @@ const fetchLists = asyncHandler( async (req, res) => {
 	}
 
 	const user = req.user;
-	const lists = await List.find({ userID: user._id }).sort({ position: 1 }).lean();
+	const lists = await List.find({ authorID: user._id }).sort({ position: 1 }).lean();
 
 	return res.status(200).json({ message: "Lits fetched successfully", data: lists, success: true });
 } );
@@ -32,9 +32,9 @@ const createList = asyncHandler( async (req, res) => {
 
 	if (!title || title.length === 0) throw new ApiError(400, ERRORS.LIST_TITLE_REQUIRED);
 
-	const count = await List.countDocuments({ userID: user._id });
+	const count = await List.countDocuments({ authorID: user._id });
 
-	const newList = await List.create({ userID: user._id, title, position: count });
+	const newList = await List.create({ authorID: user._id, title, position: count });
 
 	return res.status(200).json({ message: `List "${newList.title}" was created`, data: newList, success: true });
 } );
@@ -57,7 +57,7 @@ const updateList = asyncHandler( async (req, res) => {
 
 	if (!Types.ObjectId.isValid(listID)) throw new ApiError(400, ERRORS.LIST_NOT_IDENTIFIED);
 	
-	const list = await List.findOneAndUpdate({ _id: listID, userID: user._id }, { title }, { new: true, runValidators: true });
+	const list = await List.findOneAndUpdate({ _id: listID, authorID: user._id }, { title }, { new: true, runValidators: true });
 	if (!list) throw new ApiError(404, ERRORS.LIST_NOT_FOUND);
 
 	return res.status(200).json({
@@ -81,10 +81,10 @@ const deleteList = asyncHandler( async (req, res) => {
 	
 	if (!Types.ObjectId.isValid(listID)) throw new ApiError(400, ERRORS.LIST_NOT_IDENTIFIED);
 
-	const list = await List.findOneAndDelete({ _id: listID, userID: user._id });
+	const list = await List.findOneAndDelete({ _id: listID, authorID: user._id });
 	if (!list) throw new ApiError(404, ERRORS.LIST_NOT_FOUND);
 	
-	await Task.deleteMany({ listID: list._id, userID: user._id });
+	await Task.deleteMany({ listID: list._id, authorID: user._id });
 	
 	return res.status(200).json({
 		message: `List "${list.title}" and its associated tasks were deleted`,
@@ -115,7 +115,7 @@ const reorderLists = asyncHandler( async (req, res) => {
 
 	const bulk = listsOrder.map(l => ( {
 		updateOne: {
-			filter: { _id: l._id, userID: user._id },
+			filter: { _id: l._id, authorID: user._id },
 			update: {
 				position: l.position
 			},
@@ -127,7 +127,7 @@ const reorderLists = asyncHandler( async (req, res) => {
 		await List.bulkWrite(bulk);
 	}
 
-	const updatedLists = await List.find({ userID: user._id }).sort({ position: 1 }).lean();
+	const updatedLists = await List.find({ authorID: user._id }).sort({ position: 1 }).lean();
 
 	const response = { message: "Reordered", success: true, data: updatedLists };
 

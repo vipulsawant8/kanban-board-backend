@@ -7,4 +7,4 @@ logs/
 *.log
 
 node_modules/
-seed.json
+src/seed.json
