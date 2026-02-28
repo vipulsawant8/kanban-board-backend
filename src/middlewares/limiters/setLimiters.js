@@ -87,10 +87,26 @@ export const refreshTokenLimiter = createLimiter(
 	"Too many token refresh attempts. Please try again later."
 );
 
-export const createOrModifyResourceLimiter = createLimiter(
+export const createResourceLimiter = createLimiter(
 	60 * 60 * 1000,
 	3,
-	"Max 3 List or Task creation/updation/deletion allowed",
+	"Max 3 List or Task creation allowed per hour",
+	"user",
+	true
+);
+
+export const updateResourceLimiter = createLimiter(
+	60 * 60 * 1000,
+	3,
+	"Max 3 List or Task updation allowed per hour",
+	"user",
+	true
+);
+
+export const deleteResourceLimiter = createLimiter(
+	60 * 60 * 1000,
+	3,
+	"Max 3 List or Task deletion allowed per hour",
 	"user",
 	true
 );

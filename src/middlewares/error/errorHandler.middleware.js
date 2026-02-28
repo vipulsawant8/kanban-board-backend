@@ -1,5 +1,5 @@
 // src/middlewares/error/errorHandler.middleware.js
-
+import { ZodError } from "zod";
 import ERRORS from "../../constants/errors.js";
 
 const getCollectionName = (err) => {

@@ -27,10 +27,6 @@ const positionSchema = z
   .int({ message: ERRORS.TASK_POSITION_INVALID })
   .nonnegative({ message: ERRORS.TASK_POSITION_INVALID });
 
-/* ---------------- FETCH TASKS ---------------- */
-/* no validation required */
-
-
 /* ---------------- CREATE TASK ---------------- */
 
 export const createTaskSchema = {

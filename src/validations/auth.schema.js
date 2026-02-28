@@ -33,11 +33,7 @@ export const createAccountSchema = {
 export const verifyEmailSchema = {
   body: z.object({
     token: tokenSchema,
-  }).partial(),
-
-  query: z.object({
-    token: tokenSchema,
-  }).partial(),
+  }).partial()
 };
 
 
@@ -77,9 +73,5 @@ export const resetPasswordSchema = {
   body: z.object({
     token: tokenSchema,
     newPassword: passwordSchema,
-  }).partial().strict(),
-
-  query: z.object({
-    token: tokenSchema,
-  }).partial(),
+  }).partial().strict()
 };
