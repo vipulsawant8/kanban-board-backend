@@ -1,20 +1,24 @@
 import asyncHandler from 'express-async-handler';
-import { Types } from 'mongoose';
+import logger from "../utils/logger.js";
 
 import Task from '../models/task.model.js';
 import ApiError from '../utils/ApiError.js';
 import ERRORS from '../constants/errors.js';
 
 const fetchTasks = asyncHandler( async (req, res) => {
-
-	if (process.env.NODE_ENV === "development") {
-
-		console.log("fetchTasks controller");
-	}
-
 	const user = req.user;
+	
+		logger.info(
+			{ userId: user._id },
+			"Fetch Tasks request"
+		);
 
 	const tasks = await Task.find({ authorID: user._id }).lean();
+	
+	logger.debug(
+		{ userId: user._id, resultCount: tasks.length },
+		"Tasks fetched successfully"
+	);
 
 	return res.status(200).json({
 		message: "Tasks fetched successfully",
@@ -24,26 +28,24 @@ const fetchTasks = asyncHandler( async (req, res) => {
 } );
 
 const createTask = asyncHandler( async (req, res) => {
-
-	if (process.env.NODE_ENV === "development") {
-	
-		console.log("createList controller");
-		console.log("req.body :", req.body);
-	}
-
 	const user = req.user;
 
 	const title = req.body.title?.trim();
 	const listID = req.body.listID;
 	const description = req.body.description?.trim();
 
-	if (!Types.ObjectId.isValid(listID)) throw new ApiError(400, ERRORS.TASK_LIST_NOT_IDENTIFIED);
-
-	if (!title || title.length === 0) throw new ApiError(400, ERRORS.TASK_TITLE_REQUIRED);
+	logger.info(
+		{ userId: user._id, title, listID, description },
+		"Create task attempt"
+	);
 
 	const count = await Task.countDocuments({ authorID: user._id, listID });
-
 	const newTask = await Task.create({ title, description, position: count, listID, authorID: user._id });
+
+	logger.info(
+		{ userId: user._id, taskId: newTask._id },
+		"Task created successfully"
+	);
 
 	return res.status(200).json({
 		message: `Task "${newTask.title}" was created`,
@@ -53,24 +55,24 @@ const createTask = asyncHandler( async (req, res) => {
 } );
 
 const updateTask = asyncHandler( async (req, res) => {
-
-	if (process.env.NODE_ENV === "development") {
-
-		console.log("updateTask controller");
-		console.log("req.body :", req.body);
-		console.log('req.params :', req.params);
-	}
-
 	const user = req.user;
 	const taskID = req.params.id;
 
 	const title = req.body.title?.trim();
 	const description = req.body.description?.trim();
 
-	if (!Types.ObjectId.isValid(taskID)) throw new ApiError(400, ERRORS.TASK_NOT_IDENTIFIED);
+	logger.info(
+		{ userId: user._id, title, taskID, description },
+		"Update task attempt"
+	);
 
 	const task = await Task.findOneAndUpdate({ authorID: user._id, _id: taskID }, { title, description }, { new: true }).lean();
 	if (!task) throw new ApiError(404, ERRORS.TASK_NOT_FOUND);
+
+	logger.info(
+		{ userId: user._id, taskId: task._id },
+		"Task updateded successfully"
+	);
 
 	return res.status(200).json({
 		message: `Task "${task.title}" was updated`,
@@ -80,20 +82,21 @@ const updateTask = asyncHandler( async (req, res) => {
 } );
 
 const deleteTask = asyncHandler( async (req, res) => {
-
-	if (process.env.NODE_ENV === "development") {
-
-		console.log("deleteTask controller");
-		console.log('req.params :', req.params);
-	}
-
 	const user = req.user;
 	const taskID = req.params.id;
-	
-	if (!Types.ObjectId.isValid(taskID)) throw new ApiError(400, ERRORS.TASK_NOT_IDENTIFIED);
+
+	logger.info(
+		{ userId: user._id, taskID },
+		"Delete task attempt"
+	);
 	
 	const task = await Task.findOneAndDelete({ _id: taskID, authorID: user._id }).lean();
 	if (!task) throw new ApiError(404, ERRORS.TASK_NOT_FOUND);
+
+	logger.info(
+		{ userId: user._id, taskId: task._id },
+		"Task deleted successfully"
+	);
 
 	return res.status(200).json({
 		message: `Task "${task.title}" was deleted`,
@@ -103,25 +106,13 @@ const deleteTask = asyncHandler( async (req, res) => {
 } );
 
 const reorderTasks = asyncHandler( async (req, res) => {
-
-	if (process.env.NODE_ENV === "development") {
-
-		console.log("reorderTasks controller");
-		console.log("req.body :", req.body);
-	}
-
 	const user = req.user;
 	const { tasksOrder } = req.body;
 
-	if (!Array.isArray(tasksOrder)) throw new ApiError(400, ERRORS.TASK_ORDER_DATA_TYPE_INVALID);
-
-	if (tasksOrder.length === 0) throw new ApiError(400, ERRORS.TASK_REORDER_EMPTY);
-
-	for(const t of tasksOrder) {
-		if (!Types.ObjectId.isValid(t._id)) throw new ApiError(400, ERRORS.TASK_NOT_IDENTIFIED);
-		if (!Types.ObjectId.isValid(t.listID)) throw new ApiError(400, ERRORS.TASK_LIST_NOT_IDENTIFIED);
-		if (typeof t.position !== "number" || t.position < 0) throw new ApiError(400, ERRORS.TASK_POSITION_INVALID);
-	}	
+	logger.info(
+		{ userId: user._id, tasksOrder },
+		"Reorder task attempt"
+	);
 
 	const bulk = tasksOrder.map(t => ( {
 		updateOne: {
@@ -140,8 +131,12 @@ const reorderTasks = asyncHandler( async (req, res) => {
 	
 	const updatedTasks = await Task.find({ authorID: user._id }).sort({ listID: 1, position: 1 }).lean();
 
-	const response = { message: "Reordered", success: true, data: updatedTasks };
+	logger.info(
+		{ userId: user._id, updatedTasks },
+		"Task Reorder successfully"
+	);
 
+	const response = { message: "Reordered", success: true, data: updatedTasks };
 	return res.status(200).json(response);
 } );
 

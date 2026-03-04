@@ -1,5 +1,5 @@
 import asyncHandler from 'express-async-handler';
-import { Types } from 'mongoose';
+import logger from "../utils/logger.js";
 
 import List from '../models/list.model.js';
 import ApiError from '../utils/ApiError.js';
@@ -8,57 +8,62 @@ import ERRORS from '../constants/errors.js';
 
 const fetchLists = asyncHandler( async (req, res) => {
 
-	if (process.env.NODE_ENV === "development") {
-	
-		console.log("fetchLists controller");
-		console.log("req.body :", req.body);
-	}
-
 	const user = req.user;
+
+	logger.info(
+		{ userId: user._id },
+		"Fetch lists request"
+	);
 	const lists = await List.find({ authorID: user._id }).sort({ position: 1 }).lean();
+	
+	logger.debug(
+		{ userId: user._id, resultCount: lists.length },
+		"Lists fetched successfully"
+	);
 
 	return res.status(200).json({ message: "Lits fetched successfully", data: lists, success: true });
 } );
 
 const createList = asyncHandler( async (req, res) => {
 
-	if (process.env.NODE_ENV === "development") {
-		console.log("createList controller");
-		console.log("req.body :", req.body);
-	}
-
 	const user = req.user;
 	const title = req.body.title?.trim();
 
-	if (!title || title.length === 0) throw new ApiError(400, ERRORS.LIST_TITLE_REQUIRED);
+	logger.info(
+		{ userId: user._id, title },
+		"Create list attempt"
+	);
 
 	const count = await List.countDocuments({ authorID: user._id });
-
 	const newList = await List.create({ authorID: user._id, title, position: count });
+
+	logger.info(
+		{ userId: user._id, listId: newList._id },
+		"List created successfully"
+	);
 
 	return res.status(200).json({ message: `List "${newList.title}" was created`, data: newList, success: true });
 } );
 
 const updateList = asyncHandler( async (req, res) => {
 
-	if (process.env.NODE_ENV === "development") {
-
-		console.log('updateList controller');
-		console.log('req.body :', req.body);
-		console.log('req.params :', req.params);
-	}
-
 	const user = req.user;
 	const listID = req.params.id;
 
 	const title = req.body.title?.trim();
 
-	if (!title || title.length === 0) throw new ApiError(400, ERRORS.LIST_TITLE_REQUIRED);
-
-	if (!Types.ObjectId.isValid(listID)) throw new ApiError(400, ERRORS.LIST_NOT_IDENTIFIED);
+	logger.info(
+		{ userId: user._id, title, listID },
+		"Update list attempt"
+	);
 	
 	const list = await List.findOneAndUpdate({ _id: listID, authorID: user._id }, { title }, { new: true, runValidators: true });
 	if (!list) throw new ApiError(404, ERRORS.LIST_NOT_FOUND);
+
+	logger.info(
+		{ userId: user._id, listId: list._id },
+		"List updateded successfully"
+	);
 
 	return res.status(200).json({
 		message: `List "${list.title}" was updated`,
@@ -69,20 +74,21 @@ const updateList = asyncHandler( async (req, res) => {
 
 const deleteList = asyncHandler( async (req, res) => {
 
-	if (process.env.NODE_ENV === "development") {
-
-		console.log('deleteList controller');
-		console.log('req.body :', req.body);
-		console.log('req.params :', req.params);
-	}
-
 	const user = req.user;
 	const listID = req.params.id;
-	
-	if (!Types.ObjectId.isValid(listID)) throw new ApiError(400, ERRORS.LIST_NOT_IDENTIFIED);
+
+	logger.info(
+		{ userId: user._id, listID },
+		"Delete list attempt"
+	);
 
 	const list = await List.findOneAndDelete({ _id: listID, authorID: user._id });
 	if (!list) throw new ApiError(404, ERRORS.LIST_NOT_FOUND);
+
+	logger.info(
+		{ userId: user._id, listId: list._id },
+		"List deleted successfully"
+	);
 	
 	await Task.deleteMany({ listID: list._id, authorID: user._id });
 	
@@ -96,22 +102,12 @@ const deleteList = asyncHandler( async (req, res) => {
 const reorderLists = asyncHandler( async (req, res) => {
 	const user = req.user;
 
-	if (process.env.NODE_ENV === "development") {
-
-		console.log("reorderLists controller");
-		console.log("req.body :", req.body);
-	}
-
 	const { listsOrder } = req.body;
 
-	if (!Array.isArray(listsOrder)) throw new ApiError(400, ERRORS.LIST_ORDER_DATA_TYPE_INVALID);
-
-	if (listsOrder.length === 0) throw new ApiError(400, ERRORS.LIST_REORDER_EMPTY);
-
-	for(const l of listsOrder) {
-		if (!Types.ObjectId.isValid(l._id)) throw new ApiError(400, ERRORS.LIST_NOT_IDENTIFIED);
-		if (typeof l.position !== "number" || l.position < 0) throw new ApiError(400, ERRORS.LIST_POSITION_INVALID);
-	}
+	logger.info(
+		{ userId: user._id, listsOrder },
+		"Reorder list attempt"
+	);
 
 	const bulk = listsOrder.map(l => ( {
 		updateOne: {
@@ -129,8 +125,12 @@ const reorderLists = asyncHandler( async (req, res) => {
 
 	const updatedLists = await List.find({ authorID: user._id }).sort({ position: 1 }).lean();
 
-	const response = { message: "Reordered", success: true, data: updatedLists };
+	logger.info(
+		{ userId: user._id, updatedLists },
+		"List Reorder successfully"
+	);
 
+	const response = { message: "Reordered", success: true, data: updatedLists };
 	return res.status(200).json(response);
 });
 

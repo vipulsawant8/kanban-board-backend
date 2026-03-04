@@ -45,7 +45,7 @@ export const updateTaskSchema = {
     id: objectIdSchema(ERRORS.TASK_NOT_IDENTIFIED),
   }),
   body: z.object({
-    title: titleSchema.optional(),
+    title: titleSchema,
     description: descriptionSchema,
   }).strict(),
 };
