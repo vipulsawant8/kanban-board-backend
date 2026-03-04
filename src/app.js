@@ -2,7 +2,7 @@ import e, { json, urlencoded, static as static_ } from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 
-import morgan from 'morgan';
+import logger from "./utils/logger.js";
 
 import authRoutes from "./routes/auth.routes.js";
 import listRoutes from "./routes/list.routes.js";
@@ -10,17 +10,20 @@ import taskRoutes from "./routes/task.routes.js";
 
 import errorHandler from './middlewares/error/errorHandler.middleware.js';
 
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from './config/swagger.js';
+
 const app = e();
 
 app.disable('x-powered-by');
 app.set("trust proxy", true);
 
 const allowedOrigins = process.env.CORS_ORIGIN.split(',');
-if (process.env.NODE_ENV === "development") console.log("Allowed CORS Origins :", allowedOrigins);
+logger.info({ allowedOrigins }, "CORS configuration loaded");
 
 const corsOptions = {
 	origin: function (origin, callback) {
-		
+		logger.debug({ requestOrigin: origin }, "Incoming CORS origin check");
 		if (!origin) return callback(null, true);
 		if (allowedOrigins.indexOf(origin) === -1) {
 			const msg = `The CORS policy for this site does not allow access from the specified Origin.`;
@@ -49,17 +52,39 @@ app.use(static_("public"));
 
 app.use(cookieParser());
 
-const morganFormat = process.env.NODE_ENV === "production" ? "combined" : "dev";
-app.use(morgan(morganFormat));
+app.use((req, res, next) => {
+  logger.info(
+    {
+      method: req.method,
+      url: req.originalUrl,
+      ip: req.ip
+    },
+    "Incoming request"
+  );
+  next();
+});
 
 const apiRoute = '/api/v1';
+
+app.use(`/api-docs`, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(`${apiRoute}/auth`, authRoutes);
 app.use(`${apiRoute}/lists`, listRoutes);
 app.use(`${apiRoute}/tasks`, taskRoutes);
 
+app.get(`/health`, (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    uptime: process.uptime(),
+    timestamp: Date.now()
+  });
+});
 
 app.use((req, res) => {
+	logger.warn(
+		{ method: req.method, url: req.originalUrl },
+		"Route not found"
+	);
 	res.status(404).json({ message: "Route not found", success: false });
 });
 

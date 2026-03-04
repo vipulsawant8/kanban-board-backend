@@ -11,7 +11,7 @@ const listSchema = new Schema({
 		// lowercase: true
 	},
 	
-	userID: {
+	authorID: {
 
 		type: Types.ObjectId,
 		ref: "User",
@@ -25,7 +25,7 @@ const listSchema = new Schema({
 	}
 }, { timestamps: true });
 
-listSchema.index({ userID: 1, title: 1 }, { unique: true, collation: { locale: 'en', strength: 2 } });
+listSchema.index({ authorID: 1, title: 1 }, { unique: true, collation: { locale: 'en', strength: 2 } });
 
 listSchema.methods.toJSON = function () {
 

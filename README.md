@@ -1,224 +1,206 @@
-# Kanban Board — Backend API (Node.js + Express)
+# Kanban Backend
 
-![License](https://img.shields.io/github/license/vipulsawant8/notes-app-backend)
-![Node](https://img.shields.io/badge/node-%3E%3D18.x-brightgreen)
-![Express](https://img.shields.io/badge/express-5.x-black)
-![MongoDB](https://img.shields.io/badge/mongodb-database-green)
-![Render](https://img.shields.io/badge/render-deployed-success?logo=render&logoColor=white)
+RESTful backend for a **Kanban-style task management system** built with **Node.js, Express, and MongoDB**.
 
-Backend service for a Kanban Board application, built with Node.js, Express, and MongoDB.
+The API allows authenticated users to manage **lists and tasks**. Each list can contain multiple tasks, enabling flexible task organization based on user-defined list structures.
 
-This API manages authentication, lists, and tasks, using a cookie-based session model with access and refresh token rotation.
-Designed to integrate with a separately deployed React + Redux frontend.
 
-## Architecture Overview
 
-The backend follows a modular Express architecture with clear separation of concerns:
+# Core Features
 
-- Routing → endpoint definitions
-- Controllers → request handling and response shaping
-- Middleware → authentication and centralized error handling
-- Models → data schemas and business rules
-- Utilities → shared helpers and abstractions
+* Versioned REST API (`/api/v1`)
+* JWT-based authentication
+* CRUD operations for lists
+* CRUD operations for tasks
+* User-specific data ownership
+* Request validation using schemas
+* Centralized error handling
+* Modular MVC architecture
+* MongoDB database integration
 
-All endpoints are versioned under `/api/v1`.  
-All security-sensitive logic (tokens, cookies, session validation) is handled exclusively on the server.
 
-## Error Message Management
 
-Application error messages are centralized in a shared constants file.
+# Data Model Overview
 
-- All reusable error messages are defined in `constants/errors.js`
-- Controllers reference predefined error keys instead of hardcoded strings
-- This ensures consistent API responses across authentication, lists, and tasks
-- Improves maintainability and reduces duplication in controller logic
+The backend follows this structure:
 
-## Authentication & Session Strategy
+User → Lists → Tasks
 
-This backend implements **cookie-based authentication with refresh token rotation**.
+Example:
 
-### Key characteristics
+```id="ahwmlv"
+User
+ ├── List
+ │     ├── Task
+ │     ├── Task
+ │
+ ├── List
+ │     ├── Task
+ │
+ └── List
+       ├── Task
+```
 
-- Access and refresh tokens are issued by the server
-- Tokens are stored in **HTTP-only cookies**
-- Tokens are never exposed to frontend JavaScript
-- Refresh tokens are **persisted in the database**
-- Refresh tokens are **rotated on every successful refresh**
-- Sessions are tracked per device using a client-generated `deviceId`
+Lists are **fully customizable** and created by users. Tasks belong to a specific list.
 
-### Session Lifecycle
 
-1.  User logs in with credentials and a `deviceId`
-2. Server issues:
-	- Short-lived access token
-	- Long-lived refresh token
-3. Tokens are set as HTTP-only cookies
-4. Protected routes validate the access token
-5. When access token expires:
-	- Client calls `/auth/refresh-token`
-	- Server validates and rotates refresh token
-	- New cookies are issued
-6. On logout:
-	- Refresh token for that device is removed from the database
-	- Cookies are cleared
 
-If refresh validation fails, **the session is invalidated** and the user must re-authenticate.
+# Project Structure
 
-## API Design Principles
-
-- Stateless access tokens
-- Refresh token rotation to prevent replay attacks
-- Centralized error handling
-- No token storage on the client
-- Minimal surface area for authentication logic
-
-## Project Structure
-
-```bash
-src
+```id="dznr2a"
+src/
 ├── app.js
-├── constants
-│   ├── errors.js
-│   └── cookieOptions.js
-├── controllers
+├── server.js
+├── loadEnv.js
+│
+├── config/
+├── constants/
+│
+├── controllers/
 │   ├── auth.controller.js
 │   ├── list.controller.js
 │   └── task.controller.js
-├── db
+│
+├── db/
 │   └── connectDB.js
-├── loadEnv.js
-├── middlewares
-│   ├── auth
-│   │   └── verifyLogin.js
-│   └── error
-│       └── errorHandler.middleware.js
-├── models
+│
+├── middlewares/
+│   ├── auth.middleware.js
+│   ├── errorHandler.middleware.js
+│   └── validate.middleware.js
+│
+├── models/
+│   ├── user.model.js
 │   ├── list.model.js
-│   ├── task.model.js
-│   └── user.model.js
-├── routes
+│   └── task.model.js
+│
+├── routes/
 │   ├── auth.routes.js
 │   ├── list.routes.js
 │   └── task.routes.js
-├── server.js
-└── utils
-    └── ApiError.js
-
+│
+├── utils/
+│   ├── ApiError.js
+│   └── logger.js
+│
+└── validations/
+	├── auth.schema.js
+	├── list.schema.js
+	└── task.schema.js
 ```
 
-## Folder responsibilities
+# API Modules
 
-- controllers/ – business logic and response formatting
-- routes/ – endpoint definitions and middleware wiring
-- middlewares/ – authentication guards and error handling
-- models/ – MongoDB schemas and data rules
-- constants/ – shared configuration and reusable error messages
-- utils/ – reusable helpers and abstractions
+## Authentication
 
-## Authentication Middleware
+Handles user authentication and protected routes.
 
-Protected routes use a dedicated authentication middleware:
+Features:
 
-- Reads access token from HTTP-only cookies
-- Verifies token signature and expiration
-- Fetches user from database
-- Attaches user to req.user
+* User registration
+* User login
+* JWT token generation
+* Route protection middleware
 
-Refresh logic is intentionally not handled in middleware and remains centralized in the refresh endpoint.
+## Lists
 
-## Kanban Board API Behavior
+Lists are containers used to group tasks.
 
-- Lists and tasks are user-scoped (ownership enforced server-side)
-- Supports:
-	1. Create, update, delete lists
-	2. Create, update, delete tasks
-- Tasks belong to a specific list
-- Tasks can be:
-  1. Reordered within the same list
-  2. Moved across different lists
-- Task order is preserved using a position-based ordering strategy
+Users can:
 
-All validation and authorization checks are enforced by the backend.
+* Create lists
+* Retrieve their lists
+* Update list details
+* Delete lists
 
-## Error Handling
+Each list belongs to a specific user.
 
-All errors are handled by a single centralized error handler.
+## Tasks
 
-Handled cases include:
+Tasks are items created inside lists.
 
-- MongoDB duplicate key errors
-- Mongoose validation errors
-- Invalid ObjectId errors
-- JWT verification errors
-- Malformed JSON payloads
-- Custom ApiError instances
+Supported operations:
 
-Error responses are sanitized in production to avoid leaking internal details.
+* Create tasks
+* Retrieve tasks
+* Update task details
+* Move tasks between lists
+* Delete tasks
 
-## Environment Configuration
+Typical task fields include:
 
-Environment variables are managed using **dotenv-flow**, allowing environment-specific and local overrides.
+* title
+* description
+* list reference
+* timestamps
 
-Only an example file is committed:
+# Security Features
 
-```bash
-.env.example
+The backend implements several security practices:
+
+* JWT authentication
+* Route protection middleware
+* Input validation
+* Centralized error handling
+* Resource ownership checks
+
+These ensure users can only access and modify **their own lists and tasks**.
+
+# Environment Variables
+
+Create a `.env` file in the project root.
+
+Required variables:
+
+```
+PORT=
+
+DB_CONNECT_STRING=
+
+ACCESS_TOKEN_SECRET=
+
+ACCESS_TOKEN_EXPIRY=
+
+CORS_ORIGIN=
 ```
 
-Required environment variables include:
+# Local Development
 
-- PORT
-- NODE_ENV
-- MONGO_URI
-- ACCESS_TOKEN_SECRET
-- REFRESH_TOKEN_SECRET
-- CORS_ORIGIN
-- ACCESS_TOKEN_EXPIRY
-- REFRESH_TOKEN_EXPIRY
+Install dependencies:
 
-All secrets are managed server-side.  
-JWT expiration is configured via environment variables, while cookie lifetimes are defined in code to ensure consistent browser behavior.
-
-## Frontend Integration
-
-This backend is consumed by a separately deployed frontend.
-
-- Frontend Repository: https://github.com/vipulsawant8/kanban-board-frontend
-- Frontend Stack: React, Redux Toolkit, Axios
-- Auth Integration: Cookie-based authentication with refresh token rotation
-
-The frontend does not manage tokens and relies entirely on server-side session handling.
-
-## Security Considerations
-
-- Tokens stored only in HTTP-only cookies
-- Refresh tokens rotated on every use
-- Logout invalidates refresh token in database
-- No sensitive data returned in API responses
-- Error messages sanitized in production
-
-This backend is intended for portfolio and demo usage, not high-risk production systems.
-
-## Getting Started (Local Development)
-
-1. Clone the repository
-2. Install dependencies
-```bash
+```
 npm install
 ```
-3. Create an environment file
-```bash
-cp .env.example .env.development
+
+Create `.env` file with required variables.
+
+Start development server:
+
 ```
-4. Start the server
-```bash
 npm run dev
 ```
-The API will be available at:
-```bash
-http://localhost:<PORT>/api/v1
+
+The server will start on the configured `PORT`.
+
+# API Base URL
+
+```
+/api/v1
 ```
 
-## License
+Example endpoints:
 
-This project is licensed under the MIT License.
+```
+POST   /api/v1/auth/login
+POST   /api/v1/auth/register
+
+GET    /api/v1/lists
+POST   /api/v1/lists
+
+GET    /api/v1/tasks
+POST   /api/v1/tasks
+```
+
+# License
+
+MIT License

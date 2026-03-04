@@ -1,6 +1,5 @@
-// src/middlewares/error/errorHandler.middleware.js
-
-import ERRORS from "../../constants/errors.js";
+import { ZodError } from "zod";
+import logger from "../../utils/logger.js";
 
 const getCollectionName = (err) => {
 	if (err.errorResponse?.collection) return err.errorResponse.collection;
@@ -18,8 +17,8 @@ const errorHandler = (err, req, res, next) => {
 
 	// Debug logging
 	if (!isProd) {
-		console.error("🔥 ERROR:", err);
-		if (err.stack) console.error(err.stack);
+		logger.error({ err }, "Error is :");
+		if (err.stack) logger.error({stack: err.stack});
 	}
 
 	// -----------------------------------------
@@ -30,10 +29,8 @@ const errorHandler = (err, req, res, next) => {
 		const fields = Object.keys(err.keyPattern).join(",");
 
 		let message;
-		if(collection === "lists") {
-			message = ERRORS.LIST_ALREADY_EXISTS;
-		} else if(collection === "tasks") {
-			message = ERRORS.TASK_ALREADY_EXISTS;
+		if(collection === "notes") {
+			message = "A note with this title already exists in your account.";
 		} else {
 			message = `${fields} already exists in ${collection}`;
 		}
@@ -105,7 +102,20 @@ const errorHandler = (err, req, res, next) => {
 	}
 
 	// -----------------------------------------
-	// 7. Fallback: internal server error
+	// 7. Zod Validation Errors 
+	// -----------------------------------------
+	if (err instanceof ZodError) {
+		const message =
+			err.issues[0]?.message || ERRORS.VALIDATION_FAILED;
+
+		return res.status(400).json({
+			success: false,
+			message,
+		});
+	}
+
+	// -----------------------------------------
+	// 8. Fallback: internal server error
 	// -----------------------------------------
 	return res.status(500).json({
 		success: false,
