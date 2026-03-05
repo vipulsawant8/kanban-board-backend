@@ -4,8 +4,6 @@ RESTful backend for a **Kanban-style task management system** built with **Node.
 
 The API allows authenticated users to manage **lists and tasks**. Each list can contain multiple tasks, enabling flexible task organization based on user-defined list structures.
 
-
-
 # Core Features
 
 * Versioned REST API (`/api/v1`)
@@ -17,8 +15,6 @@ The API allows authenticated users to manage **lists and tasks**. Each list can 
 * Centralized error handling
 * Modular MVC architecture
 * MongoDB database integration
-
-
 
 # Data Model Overview
 
@@ -42,52 +38,6 @@ User
 ```
 
 Lists are **fully customizable** and created by users. Tasks belong to a specific list.
-
-
-
-# Project Structure
-
-```id="dznr2a"
-src/
-├── app.js
-├── server.js
-├── loadEnv.js
-│
-├── config/
-├── constants/
-│
-├── controllers/
-│   ├── auth.controller.js
-│   ├── list.controller.js
-│   └── task.controller.js
-│
-├── db/
-│   └── connectDB.js
-│
-├── middlewares/
-│   ├── auth.middleware.js
-│   ├── errorHandler.middleware.js
-│   └── validate.middleware.js
-│
-├── models/
-│   ├── user.model.js
-│   ├── list.model.js
-│   └── task.model.js
-│
-├── routes/
-│   ├── auth.routes.js
-│   ├── list.routes.js
-│   └── task.routes.js
-│
-├── utils/
-│   ├── ApiError.js
-│   └── logger.js
-│
-└── validations/
-	├── auth.schema.js
-	├── list.schema.js
-	└── task.schema.js
-```
 
 # API Modules
 
