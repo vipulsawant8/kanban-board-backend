@@ -8,14 +8,14 @@ import ERRORS from '../constants/errors.js';
 const fetchTasks = asyncHandler( async (req, res) => {
 	const user = req.user;
 	
-		logger.info(
+		req.log.info(
 			{ userId: user._id },
 			"Fetch Tasks request"
 		);
 
 	const tasks = await Task.find({ authorID: user._id }).lean();
 	
-	logger.debug(
+	req.log.debug(
 		{ userId: user._id, resultCount: tasks.length },
 		"Tasks fetched successfully"
 	);
@@ -34,7 +34,7 @@ const createTask = asyncHandler( async (req, res) => {
 	const listID = req.body.listID;
 	const description = req.body.description?.trim();
 
-	logger.info(
+	req.log.info(
 		{ userId: user._id, title, listID, description },
 		"Create task attempt"
 	);
@@ -42,7 +42,7 @@ const createTask = asyncHandler( async (req, res) => {
 	const count = await Task.countDocuments({ authorID: user._id, listID });
 	const newTask = await Task.create({ title, description, position: count, listID, authorID: user._id });
 
-	logger.info(
+	req.log.info(
 		{ userId: user._id, taskId: newTask._id },
 		"Task created successfully"
 	);
@@ -61,7 +61,7 @@ const updateTask = asyncHandler( async (req, res) => {
 	const title = req.body.title?.trim();
 	const description = req.body.description?.trim();
 
-	logger.info(
+	req.log.info(
 		{ userId: user._id, title, taskID, description },
 		"Update task attempt"
 	);
@@ -69,7 +69,7 @@ const updateTask = asyncHandler( async (req, res) => {
 	const task = await Task.findOneAndUpdate({ authorID: user._id, _id: taskID }, { title, description }, { new: true }).lean();
 	if (!task) throw new ApiError(404, ERRORS.TASK_NOT_FOUND);
 
-	logger.info(
+	req.log.info(
 		{ userId: user._id, taskId: task._id },
 		"Task updateded successfully"
 	);
@@ -85,7 +85,7 @@ const deleteTask = asyncHandler( async (req, res) => {
 	const user = req.user;
 	const taskID = req.params.id;
 
-	logger.info(
+	req.log.info(
 		{ userId: user._id, taskID },
 		"Delete task attempt"
 	);
@@ -93,7 +93,7 @@ const deleteTask = asyncHandler( async (req, res) => {
 	const task = await Task.findOneAndDelete({ _id: taskID, authorID: user._id }).lean();
 	if (!task) throw new ApiError(404, ERRORS.TASK_NOT_FOUND);
 
-	logger.info(
+	req.log.info(
 		{ userId: user._id, taskId: task._id },
 		"Task deleted successfully"
 	);
@@ -109,7 +109,7 @@ const reorderTasks = asyncHandler( async (req, res) => {
 	const user = req.user;
 	const { tasksOrder } = req.body;
 
-	logger.info(
+	req.log.info(
 		{ userId: user._id, tasksOrder },
 		"Reorder task attempt"
 	);
@@ -131,7 +131,7 @@ const reorderTasks = asyncHandler( async (req, res) => {
 	
 	const updatedTasks = await Task.find({ authorID: user._id }).sort({ listID: 1, position: 1 }).lean();
 
-	logger.info(
+	req.log.info(
 		{ userId: user._id, updatedTasks },
 		"Task Reorder successfully"
 	);

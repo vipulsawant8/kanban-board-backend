@@ -1,155 +1,160 @@
 # Kanban Backend
 
-RESTful backend for a **Kanban-style task management system** built with **Node.js, Express, and MongoDB**.
+This project is a simple Kanban task management backend API built with
+Node.js, Express, and MongoDB. It allows users to create lists and add
+tasks inside those lists.
 
-The API allows authenticated users to manage **lists and tasks**. Each list can contain multiple tasks, enabling flexible task organization based on user-defined list structures.
+The idea is similar to tools like a Kanban board where tasks are
+organized in different columns such as Todo, Doing, and Done.
 
-# Core Features
+This project is mainly for learning how to build a REST API with
+authentication and a database.
 
-* Versioned REST API (`/api/v1`)
-* JWT-based authentication
-* CRUD operations for lists
-* CRUD operations for tasks
-* User-specific data ownership
-* Request validation using schemas
-* Centralized error handling
-* Modular MVC architecture
-* MongoDB database integration
-
-# Data Model Overview
-
-The backend follows this structure:
-
-User → Lists → Tasks
-
-Example:
-
-```id="ahwmlv"
-User
- ├── List
- │     ├── Task
- │     ├── Task
- │
- ├── List
- │     ├── Task
- │
- └── List
-       ├── Task
-```
-
-Lists are **fully customizable** and created by users. Tasks belong to a specific list.
-
-# API Modules
-
-## Authentication
-
-Handles user authentication and protected routes.
-
-Features:
-
-* User registration
-* User login
-* JWT token generation
-* Route protection middleware
-
-## Lists
-
-Lists are containers used to group tasks.
+# What This Backend Does
 
 Users can:
 
-* Create lists
-* Retrieve their lists
-* Update list details
-* Delete lists
+-   Register an account
+-   Log in to get access to the API
+-   Create lists (like Todo, In Progress, Done)
+-   Add tasks inside lists
+-   Edit tasks
+-   Move tasks between lists
+-   Delete lists or tasks
 
-Each list belongs to a specific user.
+Each user only sees their own lists and tasks.
 
-## Tasks
+# Tech Stack
 
-Tasks are items created inside lists.
+The backend is built with the following tools:
 
-Supported operations:
-
-* Create tasks
-* Retrieve tasks
-* Update task details
-* Move tasks between lists
-* Delete tasks
-
-Typical task fields include:
-
-* title
-* description
-* list reference
-* timestamps
-
-# Security Features
-
-The backend implements several security practices:
-
-* JWT authentication
-* Route protection middleware
-* Input validation
-* Centralized error handling
-* Resource ownership checks
-
-These ensure users can only access and modify **their own lists and tasks**.
-
-# Environment Variables
-
-Create a `.env` file in the project root.
-
-Required variables:
-
-```
-PORT=
-
-DB_CONNECT_STRING=
-
-ACCESS_TOKEN_SECRET=
-
-ACCESS_TOKEN_EXPIRY=
-
-CORS_ORIGIN=
-```
-
-# Local Development
-
-Install dependencies:
-
-```
-npm install
-```
-
-Create `.env` file with required variables.
-
-Start development server:
-
-```
-npm run dev
-```
-
-The server will start on the configured `PORT`.
+-   Node.js -- JavaScript runtime
+-   Express -- Web framework
+-   MongoDB -- Database
+-   Mongoose -- MongoDB ODM
+-   JWT -- Authentication
+-   Zod -- Request validation
+-   Pino -- Logging
+-   Swagger -- API documentation
+-   Jest + Supertest -- Testing
 
 # API Base URL
 
-```
 /api/v1
+
+# Authentication Routes
+
+Register a new user
 ```
-
-Example endpoints:
-
+POST /api/v1/auth/register
 ```
-POST   /api/v1/auth/login
-POST   /api/v1/auth/register
-
-GET    /api/v1/lists
-POST   /api/v1/lists
-
-GET    /api/v1/tasks
-POST   /api/v1/tasks
+Login
 ```
+POST /api/v1/auth/login
+```
+After login, the API returns a JWT token which must be used for
+protected routes.
+
+# Lists Routes
+
+Create a list
+```
+POST /api/v1/lists
+```
+Get all lists for the logged-in user
+```
+GET /api/v1/lists
+```
+Update a list
+```
+PATCH /api/v1/lists/:id
+```
+Delete a list
+```
+DELETE /api/v1/lists/:id
+```
+Reorder list
+```
+PATCH /api/v1/lists/reorder
+```
+# Tasks Routes
+
+Create a task
+```
+POST /api/v1/tasks
+```
+Get tasks
+```
+GET /api/v1/tasks
+```
+Update a task
+```
+PATCH /api/v1/tasks/:id
+```
+Delete a task
+```
+DELETE /api/v1/tasks/:id
+```
+Reorder task
+```
+PATCH /api/v1/tasks/reorder
+```
+Tasks belong to a specific list.
+
+# Security Features
+
+Some basic security features are included:
+
+-   JWT authentication
+-   Protected routes
+-   Request validation
+-   Rate limiting
+-   Secure headers using Helmet
+
+These help make sure users can only access their own data.
+
+# Environment Variables
+
+Create a `.env` file in the root folder & copy variables from .env, .env.example with your values .
+
+
+# Running the Project
+
+Install dependencies
+```
+npm install
+```
+Run the development server
+```
+npm run dev
+```
+Run tests
+```
+npm test
+```
+Start production server
+```
+npm start
+```
+# API Documentation
+
+Swagger documentation is available for testing the API.
+
+Once the server is running, open:
+```
+/api-docs
+```
+in your browser.
+
+# Notes
+
+This project was built for learning purposes to practice:
+
+-   REST API design
+-   Authentication with JWT
+-   MongoDB with Mongoose
+-   Express middleware
+-   API testing
 
 # License
 

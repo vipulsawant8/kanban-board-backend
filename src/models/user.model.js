@@ -45,10 +45,12 @@ const userSchema = new Schema({
 					type: String
 				},
 				createdAt: {
-					type: Date
+					type: Date,
+					default: Date.now
 				},
 				expiresAt: {
-					type: Date
+					type: Date,
+ 					required: true
 				}
 			}
 		],
@@ -67,12 +69,14 @@ const userSchema = new Schema({
 }, { timestamps: true });
 
 userSchema.index({ email: 1 }, { unique:true });
-// userSchema.index({ verified: 1 });
+userSchema.index({ "refreshTokens.expiresAt": 1 });
 
-userSchema.pre('save', async function () {
-	if (this.isModified('password')) {
-		this.password = await bcrypt.hash(this.password, 10);
-	}; 
+userSchema.pre("save", async function () {
+
+ if (!this.isModified("password")) return;
+
+ this.password = await bcrypt.hash(this.password, 10);
+
 });
 
 userSchema.methods.toJSON = function () {

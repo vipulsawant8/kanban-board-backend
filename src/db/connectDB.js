@@ -1,4 +1,4 @@
-import { connect } from "mongoose";
+import mongoose from "mongoose";
 import User from "../models/user.model.js";
 import List from "../models/list.model.js";
 import Task from "../models/task.model.js";
@@ -14,7 +14,7 @@ const connectDB = async () => {
 			throw new Error("DB_CONNECT_STRING is not defined in environment variables");
 		}
 
-		const conn = await connect(DB_PATH);
+		const conn = await mongoose.connect(DB_PATH);
 
 		logger.info(
 		{

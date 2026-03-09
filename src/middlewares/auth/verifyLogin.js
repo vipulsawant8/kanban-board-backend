@@ -21,6 +21,8 @@ const verifyLogin = asyncHandler( async (req, res, next) => {
 
 	if (!decodedToken.id) throw new ApiError(401, ERRORS.UNAUTHORIZED);
 
+	req.log.debug({ decodedToken }, "User :");
+
 	const user = await User.findById(decodedToken.id);
 
 	if (!user) throw new ApiError(404, "User not found");

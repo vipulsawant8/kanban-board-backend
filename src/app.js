@@ -1,8 +1,10 @@
 import e, { json, urlencoded, static as static_ } from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import helmet from "helmet";
 
 import logger from "./utils/logger.js";
+import { httpLogger } from './utils/logger.js';
 
 import authRoutes from "./routes/auth.routes.js";
 import listRoutes from "./routes/list.routes.js";
@@ -44,6 +46,12 @@ const jsonOptions = {
 	limit: "50mb"
 };
 
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+  })
+);
+
 app.use(cors(corsOptions));
 
 app.use(json(jsonOptions));
@@ -52,17 +60,7 @@ app.use(static_("public"));
 
 app.use(cookieParser());
 
-app.use((req, res, next) => {
-  logger.info(
-    {
-      method: req.method,
-      url: req.originalUrl,
-      ip: req.ip
-    },
-    "Incoming request"
-  );
-  next();
-});
+app.use(httpLogger);
 
 const apiRoute = '/api/v1';
 

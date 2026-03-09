@@ -35,28 +35,28 @@ const generateAccessRefreshToken = async ({ userId, deviceId, userAgent, ipAddre
 		);
 
 		await User.updateOne(
-		{ _id: userId },
-		{
-		$push: {
-			refreshTokens: {
-			$each: [{
-				token: hashedToken,
-				deviceId,
-				userAgent,
-				ipAddress,
-				createdAt: new Date(),
-				expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY)
-			}],
-			$slice: -5
-			}
-		}
-		}
-	);
+			{ _id: userId },
+			{
+				$push: {
+					refreshTokens: {
+					$each: [{
+						token: hashedToken,
+						deviceId,
+						userAgent,
+						ipAddress,
+						createdAt: new Date(),
+						expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY)
+					}],
+					$slice: -5
+					}
+				}
+				}
+		);
 
-	logger.info(
-		{ userId, deviceId },
-		"Refresh token stored successfully"
-	);
+		logger.info(
+			{ userId, deviceId },
+			"Refresh token stored successfully"
+		);
 
 	const tokens = { accessToken, refreshToken };
 	return tokens;
@@ -73,7 +73,7 @@ const createAccount = asyncHandler(async (req, res) => {
 
 	const { email, name, password } = req.body;
 
-	logger.info({ email }, "Account creation attempt");
+	req.log.info({ email }, "Account creation attempt");
 	if (!email || !name || !password)
 		throw new ApiError(400, ERRORS.MISSING_FIELDS);
 
@@ -81,7 +81,7 @@ const createAccount = asyncHandler(async (req, res) => {
 
 	// Case 1: User already verified
 	if (existingUser && existingUser.isVerified) {
-		logger.warn({ email }, "Account creation failed: already verified");
+		req.log.warn({ email }, "Account creation failed: already verified");
 		throw new ApiError(400, "Account already exists. Please login.");
 	}
 
@@ -123,7 +123,7 @@ const createAccount = asyncHandler(async (req, res) => {
 		subject: "Verify Your Email",
 		text: `Click the link to verify your email: ${verificationLink}`
 	});
-	logger.info({ email }, "Verification email sent");
+	req.log.info({ email }, "Verification email sent");
 	return res.status(201).json({
 		success: true,
 		message: "Please verify your email to activate your account."
@@ -131,7 +131,7 @@ const createAccount = asyncHandler(async (req, res) => {
 });
 
 const verifyEmail = asyncHandler(async (req, res) => {
-	logger.info("Email verification attempt");
+	req.log.info("Email verification attempt");
 
 	const token = req.query.token || req.body.token;
 
@@ -149,7 +149,7 @@ const verifyEmail = asyncHandler(async (req, res) => {
 	});
 
 	if (!user){
-		logger.warn("Invalid or expired verification token");
+		req.log.warn("Invalid or expired verification token");
 		throw new ApiError(400, "Invalid or expired token.");
 	}
 
@@ -164,7 +164,7 @@ const verifyEmail = asyncHandler(async (req, res) => {
 	user.verificationTokenExpiry = undefined;
 
 	await user.save();
-	logger.info({ userId: user._id }, "Email verified successfully");
+	req.log.info({ userId: user._id }, "Email verified successfully");
 
 	return res.status(200).json({
 		success: true,
@@ -177,7 +177,7 @@ const loginUser = asyncHandler( async (req, res) => {
 	const identity = req.body.identity;
 	const password = req.body.password;
 	const deviceId = req.body.deviceId;
-	logger.info(
+	req.log.info(
 		{ email: identity, ip: req.ip },
 		"Login attempt"
 	);
@@ -185,7 +185,7 @@ const loginUser = asyncHandler( async (req, res) => {
 	const user = await User.findOne({ email: identity }).select("-refreshToken");
 
 	if (!user){
-		logger.warn(
+		req.log.warn(
 			{ email: identity },
 			"Login failed: user not found"
 		);
@@ -197,14 +197,14 @@ const loginUser = asyncHandler( async (req, res) => {
 	const isPasswordVerified = await user.verifyPassword(password);
 
 	if (!isPasswordVerified) {
-		logger.warn(
+		req.log.warn(
 			{ email: identity },
 			"Login failed: invalid credentials"
 		);
 		throw new ApiError(401, "Invalid-credentials");}
 
 	const { accessToken, refreshToken } = await generateAccessRefreshToken({ userId: user._id, deviceId, userAgent: req.get('User-Agent') || '', ipAddress: req.ip || req.socket?.remoteAddress || '' });
-	logger.info(
+	req.log.info(
 		{ userId: user._id, deviceId },
 		"User logged in successfully"
 	);
@@ -216,12 +216,12 @@ const loginUser = asyncHandler( async (req, res) => {
 } );
 
 const logoutUser = asyncHandler( async (req, res) => {
-	logger.info({ ip: req.ip }, "Logout attempt");
+	req.log.info({ ip: req.ip }, "Logout attempt");
 
 	const incomingToken = req.cookies.refreshToken;
 
 	if (!incomingToken) {
-		logger.warn(
+		req.log.warn(
 			"User logged out no token found"
 		);
 		return clearAndRespond(res);
@@ -235,7 +235,7 @@ const logoutUser = asyncHandler( async (req, res) => {
 		process.env.REFRESH_TOKEN_SECRET
 		);
 	} catch {
-		logger.warn(
+		req.log.warn(
 			"User logged out token invalid or expired"
 		);
 		return clearAndRespond(res);
@@ -257,7 +257,7 @@ const logoutUser = asyncHandler( async (req, res) => {
 			}
 		}
 	);
-	logger.info(
+	req.log.info(
 	{ userId: decodedToken.id },
 	"User logged out successfully"
 	);
@@ -273,10 +273,10 @@ const getMe = asyncHandler( async (req, res) => {
 } );
 
 const refreshAccessToken = asyncHandler( async (req, res) => {
-	logger.info({ ip: req.ip }, "Refresh token attempt");
+	req.log.info({ ip: req.ip }, "Refresh token attempt");
 	const incomingToken = req.cookies.refreshToken;
 	if (!incomingToken) {
-		logger.warn("Refresh token rejected");
+		req.log.warn("Refresh token rejected");
 		throw new ApiError(401, "Unauthorized");
 	}
 
@@ -307,7 +307,7 @@ const refreshAccessToken = asyncHandler( async (req, res) => {
 	});
 
 	if (!user) throw new ApiError(401, "Unauthorized");
-	logger.info(
+	req.log.info(
 		{ userId: user._id },
 		"Session refreshed successfully"
 	);
@@ -324,7 +324,7 @@ const refreshAccessToken = asyncHandler( async (req, res) => {
 
 const changePassword = asyncHandler( async (req, res) => {
 	const user = req.user;
-	logger.info(
+	req.log.info(
 		{ userId: user._id },
 		"Password change attempt"
 	);
@@ -333,7 +333,7 @@ const changePassword = asyncHandler( async (req, res) => {
 
 	const checkcurrentPassword = await user.verifyPassword(currentPassword);
 	if (!checkcurrentPassword) {
-		logger.warn(
+		req.log.warn(
 			{ userId: user._id },
 			"Password change failed: incorrect current password"
 		);
@@ -352,7 +352,7 @@ const changePassword = asyncHandler( async (req, res) => {
 	);
 	
 	const { accessToken, refreshToken } = await generateAccessRefreshToken({ userId: user._id, deviceId: user.deviceId, userAgent: req.get('User-Agent') || '', ipAddress: req.ip || req.socket?.remoteAddress || '' });
-	logger.info(
+	req.log.info(
 		{ userId: user._id },
 		"Password changed successfully"
 	);
@@ -365,7 +365,7 @@ const changePassword = asyncHandler( async (req, res) => {
 
 const forgotPassword = asyncHandler( async (req, res) => {
 	const { email } = req.body;
-	logger.info({ email }, "Password reset request received");
+	req.log.info({ email }, "Password reset request received");
 	
 	const user = await User.findOne({ email });
 	if (user) {
@@ -389,13 +389,13 @@ const forgotPassword = asyncHandler( async (req, res) => {
 			text: `Click the link to reset your password: ${verificationLink}`
 		});
 	}
-	logger.info({ email }, "Password reset email sent");
+	req.log.info({ email }, "Password reset email sent");
 	const response = { success:true, message: "If an account with that email exists, a reset link has been sent." };
 	return res.json(response);
 } );
 
 const resetPassword = asyncHandler( async (req, res) => {
-	logger.info("Password reset attempt");
+	req.log.info("Password reset attempt");
 
 	const token = req.body.token || req.query.token;
 	const newPassword = req.body.newPassword;
@@ -410,7 +410,7 @@ const resetPassword = asyncHandler( async (req, res) => {
 		passwordResetExpiry: { $gt: Date.now() }
 	});
 	if (!user) {
-		logger.warn("Invalid password reset token");
+		req.log.warn("Invalid password reset token");
 		throw new ApiError(400, "Invalid or expired token.");
 	}
 
@@ -419,7 +419,7 @@ const resetPassword = asyncHandler( async (req, res) => {
 	user.passwordResetToken = undefined;
 	user.passwordResetExpiry = undefined;
 	await user.save();
-	logger.info(
+	req.log.info(
 		{ userId: user._id },
 		"Password reset successfully"
 	);

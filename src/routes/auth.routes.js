@@ -161,7 +161,7 @@ router.post('/refresh-token', refreshTokenLimiter,  refreshAccessToken);
  *       400:
  *         description: Invalid password
  */
-router.post('/change-password', changePasswordLimiter, verifyLogin, validate(changePasswordSchema), changePassword);
+router.post('/change-password', verifyLogin, changePasswordLimiter, validate(changePasswordSchema), changePassword);
 /**
  * @swagger
  * /auth/forgot-password:

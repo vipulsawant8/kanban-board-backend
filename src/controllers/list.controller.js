@@ -10,18 +10,18 @@ const fetchLists = asyncHandler( async (req, res) => {
 
 	const user = req.user;
 
-	logger.info(
+	req.log.info(
 		{ userId: user._id },
 		"Fetch lists request"
 	);
 	const lists = await List.find({ authorID: user._id }).sort({ position: 1 }).lean();
 	
-	logger.debug(
+	req.log.debug(
 		{ userId: user._id, resultCount: lists.length },
 		"Lists fetched successfully"
 	);
 
-	return res.status(200).json({ message: "Lits fetched successfully", data: lists, success: true });
+	return res.status(200).json({ message: "Lists fetched successfully", data: lists, success: true });
 } );
 
 const createList = asyncHandler( async (req, res) => {
@@ -29,7 +29,7 @@ const createList = asyncHandler( async (req, res) => {
 	const user = req.user;
 	const title = req.body.title?.trim();
 
-	logger.info(
+	req.log.info(
 		{ userId: user._id, title },
 		"Create list attempt"
 	);
@@ -37,7 +37,7 @@ const createList = asyncHandler( async (req, res) => {
 	const count = await List.countDocuments({ authorID: user._id });
 	const newList = await List.create({ authorID: user._id, title, position: count });
 
-	logger.info(
+	req.log.info(
 		{ userId: user._id, listId: newList._id },
 		"List created successfully"
 	);
@@ -52,7 +52,7 @@ const updateList = asyncHandler( async (req, res) => {
 
 	const title = req.body.title?.trim();
 
-	logger.info(
+	req.log.info(
 		{ userId: user._id, title, listID },
 		"Update list attempt"
 	);
@@ -60,7 +60,7 @@ const updateList = asyncHandler( async (req, res) => {
 	const list = await List.findOneAndUpdate({ _id: listID, authorID: user._id }, { title }, { new: true, runValidators: true });
 	if (!list) throw new ApiError(404, ERRORS.LIST_NOT_FOUND);
 
-	logger.info(
+	req.log.info(
 		{ userId: user._id, listId: list._id },
 		"List updateded successfully"
 	);
@@ -77,7 +77,7 @@ const deleteList = asyncHandler( async (req, res) => {
 	const user = req.user;
 	const listID = req.params.id;
 
-	logger.info(
+	req.log.info(
 		{ userId: user._id, listID },
 		"Delete list attempt"
 	);
@@ -85,7 +85,7 @@ const deleteList = asyncHandler( async (req, res) => {
 	const list = await List.findOneAndDelete({ _id: listID, authorID: user._id });
 	if (!list) throw new ApiError(404, ERRORS.LIST_NOT_FOUND);
 
-	logger.info(
+	req.log.info(
 		{ userId: user._id, listId: list._id },
 		"List deleted successfully"
 	);
@@ -104,7 +104,7 @@ const reorderLists = asyncHandler( async (req, res) => {
 
 	const { listsOrder } = req.body;
 
-	logger.info(
+	req.log.info(
 		{ userId: user._id, listsOrder },
 		"Reorder list attempt"
 	);
@@ -125,7 +125,7 @@ const reorderLists = asyncHandler( async (req, res) => {
 
 	const updatedLists = await List.find({ authorID: user._id }).sort({ position: 1 }).lean();
 
-	logger.info(
+	req.log.info(
 		{ userId: user._id, updatedLists },
 		"List Reorder successfully"
 	);

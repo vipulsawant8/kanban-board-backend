@@ -17,8 +17,8 @@ const errorHandler = (err, req, res, next) => {
 
 	// Debug logging
 	if (!isProd) {
-		logger.error({ err }, "Error is :");
-		if (err.stack) logger.error({stack: err.stack});
+		req.log.error({ err }, "Error is :");
+		if (err.stack) req.log.error({stack: err.stack});
 	}
 
 	// -----------------------------------------
