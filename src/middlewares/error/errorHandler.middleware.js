@@ -1,5 +1,6 @@
 import { ZodError } from "zod";
 import logger from "../../utils/logger.js";
+import ERRORS from "../../constants/errors.js";
 
 const getCollectionName = (err) => {
 	if (err.errorResponse?.collection) return err.errorResponse.collection;
@@ -29,8 +30,10 @@ const errorHandler = (err, req, res, next) => {
 		const fields = Object.keys(err.keyPattern).join(",");
 
 		let message;
-		if(collection === "notes") {
-			message = "A note with this title already exists in your account.";
+		if(collection === "lists") {
+			message = ERRORS.LIST_ALREADY_EXISTS;
+		} else if(collection === "tasks") {
+			message = ERRORS.TASK_ALREADY_EXISTS;
 		} else {
 			message = `${fields} already exists in ${collection}`;
 		}
