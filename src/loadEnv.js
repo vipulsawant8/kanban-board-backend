@@ -7,4 +7,4 @@ dotenvFlow.config({
 	silent: false
 });
 
-logger.debug({env: process.env.NODE_ENV},"Environment loaded → NODE_ENV");
+logger.info({env: process.env.NODE_ENV},"Environment loaded → NODE_ENV");
